@@ -1,0 +1,94 @@
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.idea/
+.vscode/
+*.iml
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Java / Spring Boot
+backend/build/
+backend/out/
+backend/target/
+backend/.gradle/
+backend/gradle-app.setting
+backend/.settings/
+backend/.classpath
+backend/.project
+
+# Gradle
+.gradle/
+build/
+
+# Maven
+target/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/build/
+frontend/.turbo/
+frontend/.vercel/
+frontend/.pnpm-store/
+
+# Python / FastAPI
+ai-worker/__pycache__/
+ai-worker/**/*.py[cod]
+ai-worker/.pytest_cache/
+ai-worker/.mypy_cache/
+ai-worker/.ruff_cache/
+ai-worker/.venv/
+ai-worker/venv/
+ai-worker/env/
+ai-worker/.env
+ai-worker/.env.*
+
+# Test / Coverage
+coverage/
+htmlcov/
+.coverage
+coverage.xml
+junit.xml
+
+# Docker / Local Data
+docker-data/
+mysql-data/
+redis-data/
+opensearch-data/
+
+# AWS / Secrets
+.aws/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# Patch / Diff Temporary Files
+*.patch
+*.diff
+
+# Local Notes / Temporary
+.local/
+tmp/
+temp/
+scratch/
+drafts/
+private-notes/
