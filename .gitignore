@@ -81,64 +81,6 @@ opensearch-data/
 *.p12
 *.jks
 
-# AI Tool Traces - General
-chatgpt*
-ChatGPT*
-prompts/
-ai-prompts/
-ai-logs/
-llm-logs/
-conversation*
-transcript*
-*.prompt
-*.prompts.md
-
-# AI Tool Traces - Claude Code
-.claude/
-.claude.json
-.claude.*
-CLAUDE.md
-CLAUDE.local.md
-claude-*.md
-claude-*.json
-claude-*.log
-
-# AI Tool Traces - Codex
-.codex/
-.codex-cache/
-codex/
-codex-logs/
-codex-sessions/
-.codex-session*
-codex-*.json
-codex-*.log
-codex-*.md
-AGENTS.md
-AGENTS.override.md
-
-# AI Tool Traces - Other Coding Assistants
-.aider*
-.aider.chat.history.md
-.aider.input.history
-.aider.tags.cache.v3/
-.cursor/
-.windsurf/
-.continue/
-.codeium/
-.tabnine/
-
-# AI Generated / Agent Output
-.ai/
-.ai-cache/
-.ai-history/
-generated-by-ai*
-generated_by_ai*
-*_ai_generated*
-*.ai.md
-agent-output/
-agent-logs/
-tool-logs/
-
 # Patch / Diff Temporary Files
 *.patch
 *.diff
