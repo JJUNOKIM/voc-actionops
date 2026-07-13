@@ -34,7 +34,7 @@ flowchart LR
 | 백엔드 기반 | 완료 | Java 17, Spring Boot 4.1, Gradle 9, 테스트 환경 |
 | 로컬 인프라 | 구성 완료 | Docker Compose 기반 MySQL 8.4, Redis 7.4 (실행 검증 예정) |
 | 운영 기반 | 완료 | 환경별 설정, Health Check, OpenAPI/Swagger |
-| 지속적 통합 | 구성 완료 | GitHub Actions 기반 백엔드 테스트·빌드 |
+| 지속적 통합 | 완료 | GitHub Actions 기반 백엔드 테스트·빌드 |
 | 공통 API 구조 | 예정 | 공통 응답, 에러 코드, 전역 예외 처리 |
 | 핵심 기능 | 예정 | 인증, CSV 업로드, AI 분석, 이슈·액션, 대시보드 |
 | 프론트엔드·AI Worker | 예정 | Next.js 운영 화면, FastAPI 분석 워커 |
@@ -53,13 +53,17 @@ flowchart LR
 - springdoc-openapi
 - Gradle 9
 
+### Infrastructure
+
+- Docker Compose
+- GitHub Actions
+
 ### Planned
 
 - QueryDSL, Redis
 - Next.js, TypeScript, TanStack Query, Tailwind CSS
 - Python, FastAPI
 - AWS S3, SQS
-- GitHub Actions
 
 ## 로컬 실행
 
