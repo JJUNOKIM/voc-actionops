@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: voc-actionops
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  app:
+    name: VOC ActionOps
+    description: Customer feedback operations platform
+    version: ${APP_VERSION:local}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
