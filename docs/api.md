@@ -378,6 +378,7 @@ columnMapping
 
 * CSV 컬럼과 시스템 필드 매핑 정보
 * 필수
+* `application/json` 형식
 
 #### <columnMapping 예시>
 
@@ -390,6 +391,16 @@ columnMapping
 }
 ```
 
+매핑 가능한 시스템 필드는 다음과 같다.
+
+* external_id
+* content (필수 매핑)
+* customer_segment
+* product_name
+* rating
+* language
+* feedback_created_at
+
 #### <Response>
 
 ```json
@@ -397,9 +408,12 @@ columnMapping
   "success": true,
   "data": {
     "datasetId": 1,
-    "status": "UPLOADED"
+    "status": "VALIDATED",
+    "totalCount": 100,
+    "validCount": 97,
+    "invalidCount": 3
   },
-  "message": "CSV 업로드가 완료되었습니다."
+  "message": "CSV 업로드 및 검증이 완료되었습니다."
 }
 ```
 
@@ -410,7 +424,13 @@ columnMapping
 
 #### <설명>
 
-처음에는 업로드와 저장까지만 처리
+파일과 컬럼 매핑 자체가 잘못된 경우 요청을 실패 처리하고 Dataset을 생성하지 않는다.
+
+행 단위 오류가 있는 경우에는 유효한 Feedback만 저장하고, 잘못된 행은 DatasetValidationError로 기록한다. Dataset의 invalidCount는 오류 건수가 아니라 잘못된 행 수를 의미한다.
+
+rating은 0부터 5까지, 소수점 한 자리까지 허용한다. feedback_created_at은 ISO 날짜·날짜시간 또는 `yyyy-MM-dd HH:mm:ss` 형식을 지원한다.
+
+기본 업로드 제한은 파일 5MB, 데이터 10,000행이며 환경 설정으로 조정할 수 있다.
 
 CSV 업로드랑 AI 분석을 한 요청에서 처리하면 timeout 위험이 있어, AI 분석은 별도 API 시작으로 분리
 
@@ -441,6 +461,16 @@ GET /api/v1/datasets/{datasetId}
 GET /api/v1/datasets/{datasetId}/validation-errors
 ```
 
+#### <Query Parameters>
+
+page
+
+* 페이지 번호
+
+size
+
+* 페이지 크기
+
 #### <설명>
 
 CSV 업로드 과정에서 잘못된 행이 있으면 이 API로 확인한다.
@@ -466,6 +496,35 @@ INVALID_DATE_FORMAT
 DUPLICATED_EXTERNAL_ID
 
 * external_id 중복
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "id": 1,
+        "rowNumber": 4,
+        "fieldName": "rating",
+        "errorCode": "INVALID_RATING_RANGE",
+        "errorMessage": "rating must be a number between 0 and 5 with at most one decimal place",
+        "rawRow": {
+          "review_text": "결제가 느려요",
+          "score": "6"
+        },
+        "createdAt": "2026-07-16T16:00:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  },
+  "message": null
+}
+```
 
 #### <권한>
 
@@ -1330,7 +1389,7 @@ GET /api/v1/dashboard/issue-trends
 
 refresh token 저장 위치
 
-CSV 검증 실패 시 전체 rollback 여부
+대용량 CSV 비동기 처리 전환 기준
 
 AI 분석 실패 건 재시도 방식
 

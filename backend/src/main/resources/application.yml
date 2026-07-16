@@ -8,6 +8,10 @@ spring:
       timestamp_type: DATETIME(6)
   jpa:
     open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -39,3 +43,9 @@ security:
     issuer: voc-actionops
     secret: ${JWT_SECRET}
     access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+
+app:
+  dataset-upload:
+    storage-directory: ${DATASET_UPLOAD_DIRECTORY:./data/uploads}
+    max-file-size-bytes: ${DATASET_UPLOAD_MAX_FILE_SIZE_BYTES:5242880}
+    max-records: ${DATASET_UPLOAD_MAX_RECORDS:10000}

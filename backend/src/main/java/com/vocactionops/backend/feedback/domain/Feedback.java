@@ -113,8 +113,10 @@ public class Feedback {
 
 	private static BigDecimal validateRating(BigDecimal rating) {
 		if (rating != null
-				&& (rating.compareTo(MIN_RATING) < 0 || rating.compareTo(MAX_RATING) > 0)) {
-			throw new IllegalArgumentException("rating must be between 0 and 5");
+				&& (rating.compareTo(MIN_RATING) < 0
+				|| rating.compareTo(MAX_RATING) > 0
+				|| rating.stripTrailingZeros().scale() > 1)) {
+			throw new IllegalArgumentException("rating must be between 0 and 5 with at most one decimal place");
 		}
 		return rating;
 	}
