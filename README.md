@@ -17,7 +17,7 @@ flowchart LR
     C --> H[사용자 검수 및 수정 이력]
 ```
 
-## 프로젝트에서 보여주는 것
+## 설계 방향
 
 - 원문 `Feedback`과 운영 단위 `Issue`를 분리한 도메인 설계
 - AI 결과의 신뢰도, 원문 근거, 사용자 수정 이력을 남기는 Human-in-the-loop 구조
@@ -26,44 +26,40 @@ flowchart LR
 - 대량 CSV 처리와 AI 분석을 분리한 비동기 확장 구조
 - 이슈 해결 전후 지표를 비교할 수 있는 스냅샷 설계
 
-## 현재 구현 상태
-
-| 구분 | 상태 | 내용 |
-| --- | --- | --- |
-| 프로젝트 설계 | 완료 | 문제 정의, 요구사항, 도메인 모델, ERD, API 초안 |
-| 백엔드 기반 | 완료 | Java 17, Spring Boot 4.1, Gradle 9, 테스트 환경 |
-| 로컬 인프라 | 구성 완료 | Docker Compose 기반 MySQL 8.4, Redis 7.4 (실행 검증 예정) |
-| 운영 기반 | 완료 | 환경별 설정, Health Check, OpenAPI/Swagger |
-| 지속적 통합 | 완료 | GitHub Actions 기반 백엔드 테스트·빌드 |
-| 공통 API 구조 | 예정 | 공통 응답, 에러 코드, 전역 예외 처리 |
-| 핵심 기능 | 예정 | 인증, CSV 업로드, AI 분석, 이슈·액션, 대시보드 |
-| 프론트엔드·AI Worker | 예정 | Next.js 운영 화면, FastAPI 분석 워커 |
-
-## 기술 스택
-
-현재 적용된 기술과 이후 구현할 기술을 구분합니다.
+## 기술 구성
 
 ### Backend
 
 - Java 17
 - Spring Boot 4.1
 - Spring Web MVC, Spring Security, Spring Data JPA, Validation
-- MySQL, H2
-- Spring Boot Actuator
-- springdoc-openapi
+- Flyway
 - Gradle 9
 
-### Infrastructure
+### Data & Infrastructure
 
+- MySQL 8.4
+- Redis 7.4
 - Docker Compose
 - GitHub Actions
 
-### Planned
+### Test & API Documentation
 
-- QueryDSL, Redis
-- Next.js, TypeScript, TanStack Query, Tailwind CSS
-- Python, FastAPI
-- AWS S3, SQS
+- JUnit 5, H2
+- Spring Security Test, MockMvc
+- Spring Boot Actuator
+- springdoc-openapi
+
+## 저장소 구조
+
+```text
+.
+|-- backend/                 Spring Boot API 서버
+|-- docs/                    요구사항, 도메인, ERD, API 문서
+|-- docker-compose.yml       MySQL, Redis 로컬 환경
+|-- .env.example             로컬 환경 변수 예시
+`-- .github/workflows/       백엔드 CI
+```
 
 ## 로컬 실행
 
@@ -75,6 +71,8 @@ docker compose up -d
 cd backend
 ./gradlew bootRun
 ```
+
+애플리케이션 시작 시 Flyway가 데이터베이스 마이그레이션을 적용하고, JPA는 엔티티와 스키마가 일치하는지 검증합니다.
 
 실행 후 확인할 수 있는 주소:
 
@@ -97,13 +95,3 @@ cd backend
 - [도메인 모델](docs/domain_model.md)
 - [ERD](docs/erd.md)
 - [API 명세](docs/api.md)
-
-## 구현 순서
-
-1. 공통 응답 및 예외 처리
-2. 사용자 인증과 조직 단위 권한
-3. Dataset·Feedback 도메인과 CSV 업로드
-4. AI 분석 결과 저장과 사용자 보정
-5. Issue·Action 관리
-6. 대시보드와 해결 후 지표 추적
-7. 비동기 처리, 캐시, 배포 자동화 고도화

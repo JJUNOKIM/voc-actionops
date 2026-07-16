@@ -3,6 +3,9 @@ spring:
     name: voc-actionops
   profiles:
     default: local
+  flyway:
+    placeholders:
+      timestamp_type: DATETIME(6)
   jpa:
     open-in-view: false
 
