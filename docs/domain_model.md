@@ -70,6 +70,15 @@
 * ANALYZED
 * FAILED
 
+출처 유형:
+
+* SHOP_REVIEW
+* APP_REVIEW
+* CS_TICKET
+* SURVEY
+* INTERNAL_TEST
+* ETC
+
 ## 1.4 DatasetValidationError
 
 CSV 검증 과정에서 발견한 행 단위 오류다.
