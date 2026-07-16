@@ -14,11 +14,15 @@ public final class PageRequestFactory {
 	}
 
 	public static Pageable newestFirst(int page, int size, String sortProperty) {
+		Sort sort = Sort.by(Sort.Direction.DESC, sortProperty)
+				.and(Sort.by(Sort.Direction.DESC, "id"));
+		return ordered(page, size, sort);
+	}
+
+	public static Pageable ordered(int page, int size, Sort sort) {
 		if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
-		Sort sort = Sort.by(Sort.Direction.DESC, sortProperty)
-				.and(Sort.by(Sort.Direction.DESC, "id"));
 		return PageRequest.of(page, size, sort);
 	}
 }

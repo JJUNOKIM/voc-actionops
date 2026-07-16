@@ -70,7 +70,7 @@ erDiagram
     dataset_validation_errors {
         bigint id PK
         bigint dataset_id FK
-        int row_number
+        int csv_row_number
         varchar field_name
         varchar error_code
         varchar error_message
@@ -201,6 +201,6 @@ erDiagram
 
 ## 구현 단계
 
-1차 MVP는 `organizations`, `users`, `datasets`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`를 구현한다.
+1차 MVP는 `organizations`, `users`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`를 구현한다.
 
-2차에서 `dataset_validation_errors`, `feedback_embeddings`, `issue_comments`를 추가하고, 성능 개선 단계에서 `issue_metrics_snapshot`을 적용한다.
+2차에서 `feedback_embeddings`, `issue_comments`를 추가하고, 성능 개선 단계에서 `issue_metrics_snapshot`을 적용한다.

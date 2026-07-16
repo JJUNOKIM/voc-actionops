@@ -53,6 +53,7 @@
 * name
 * source_type
 * file_url
+* column_mapping_json
 * status
 * total_count
 * valid_count
@@ -431,6 +432,7 @@ MVP에서는 다음 도메인을 우선 구현한다.
 * Organization
 * User
 * Dataset
+* DatasetValidationError
 * Feedback
 * FeedbackAnalysis
 * Issue
@@ -438,6 +440,6 @@ MVP에서는 다음 도메인을 우선 구현한다.
 * Action
 * AiCorrection
 
-DatasetValidationError, FeedbackEmbedding, IssueComment는 2차 구현에서 추가한다.
+FeedbackEmbedding, IssueComment는 2차 구현에서 추가한다.
 
 IssueMetricsSnapshot은 성능 개선 단계에서 추가한다.

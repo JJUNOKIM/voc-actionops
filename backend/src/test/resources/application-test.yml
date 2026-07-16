@@ -23,3 +23,7 @@ spring:
 security:
   jwt:
     secret: voc-actionops-test-jwt-secret-key-2026
+
+app:
+  dataset-upload:
+    storage-directory: ${java.io.tmpdir}/voc-actionops-test-uploads
