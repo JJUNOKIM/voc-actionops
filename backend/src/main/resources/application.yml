@@ -33,3 +33,9 @@ springdoc:
     operations-sorter: method
   api-docs:
     path: /v3/api-docs
+
+security:
+  jwt:
+    issuer: voc-actionops
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
