@@ -34,7 +34,7 @@
 * id
 * organization_id
 * email
-* password
+* password_hash
 * name
 * role
 * created_at

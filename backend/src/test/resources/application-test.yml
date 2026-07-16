@@ -8,14 +8,14 @@ spring:
     username: sa
     password:
 
+  flyway:
+    placeholders:
+      timestamp_type: TIMESTAMP(6)
+
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
     show-sql: false
-
-  sql:
-    init:
-      mode: never
