@@ -1,0 +1,55 @@
+package com.vocactionops.backend.dataset.web;
+
+import com.vocactionops.backend.auth.security.AuthenticatedUser;
+import com.vocactionops.backend.common.response.ApiResponse;
+import com.vocactionops.backend.common.response.PageResponse;
+import com.vocactionops.backend.config.OpenApiConfig;
+import com.vocactionops.backend.dataset.application.DatasetQueryService;
+import com.vocactionops.backend.dataset.application.DatasetQueryService.DatasetDetail;
+import com.vocactionops.backend.dataset.application.DatasetQueryService.DatasetSummary;
+import com.vocactionops.backend.dataset.domain.DatasetStatus;
+import com.vocactionops.backend.dataset.domain.SourceType;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/datasets")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH_SCHEME)
+public class DatasetController {
+
+	private final DatasetQueryService datasetQueryService;
+
+	public DatasetController(DatasetQueryService datasetQueryService) {
+		this.datasetQueryService = datasetQueryService;
+	}
+
+	@GetMapping
+	public ApiResponse<PageResponse<DatasetSummary>> datasets(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@RequestParam(required = false) SourceType sourceType,
+			@RequestParam(required = false) DatasetStatus status,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size
+	) {
+		return ApiResponse.success(datasetQueryService.getDatasets(
+				authenticatedUser,
+				sourceType,
+				status,
+				page,
+				size
+		));
+	}
+
+	@GetMapping("/{datasetId}")
+	public ApiResponse<DatasetDetail> dataset(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long datasetId
+	) {
+		return ApiResponse.success(datasetQueryService.getDataset(authenticatedUser, datasetId));
+	}
+}
