@@ -34,6 +34,8 @@ class BackendApplicationTests {
 	void openApiDocumentIsAvailable() throws Exception {
 		mockMvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.info.title").value("VOC ActionOps API"));
+				.andExpect(jsonPath("$.info.title").value("VOC ActionOps API"))
+				.andExpect(jsonPath("$.components.securitySchemes.bearerAuth.type").value("http"))
+				.andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"));
 	}
 }
