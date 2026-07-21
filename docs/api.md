@@ -99,6 +99,10 @@ INVALID_STATUS_TRANSITION
 
 * 허용되지 않는 상태 변경
 
+INVALID_REFRESH_TOKEN
+
+* 만료, 위조, 재사용 또는 폐기된 refresh token
+
 ---
 
 ## 3. 인증 API
@@ -125,8 +129,10 @@ POST /api/v1/auth/login
   "success": true,
   "data": {
     "accessToken": "access-token",
+    "refreshToken": "refresh-token",
     "tokenType": "Bearer",
-    "expiresIn": 1800
+    "expiresIn": 1800,
+    "refreshTokenExpiresIn": 1209600
   },
   "message": null
 }
@@ -195,7 +201,11 @@ POST /api/v1/auth/refresh
 {
   "success": true,
   "data": {
-    "accessToken": "new-access-token"
+    "accessToken": "new-access-token",
+    "refreshToken": "new-refresh-token",
+    "tokenType": "Bearer",
+    "expiresIn": 1800,
+    "refreshTokenExpiresIn": 1209600
   },
   "message": null
 }
@@ -204,6 +214,44 @@ POST /api/v1/auth/refresh
 #### <권한>
 
 * PUBLIC
+
+#### <설명>
+
+재발급에 사용한 refresh token은 즉시 사용 처리하고 같은 family의 새 토큰으로 교체한다. 이미 사용한 토큰이 다시 들어오면 탈취 가능성이 있다고 보고 해당 family 전체를 폐기한다.
+
+---
+
+### 3.4 로그아웃
+
+```http
+POST /api/v1/auth/logout
+```
+
+#### <Request>
+
+```json
+{
+  "refreshToken": "refresh-token"
+}
+```
+
+#### <Response>
+
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "로그아웃되었습니다."
+}
+```
+
+#### <권한>
+
+* PUBLIC
+
+#### <설명>
+
+access token이 만료된 뒤에도 로그아웃할 수 있도록 refresh token으로 family 전체를 폐기한다. 알 수 없는 토큰에 대해서도 같은 성공 응답을 반환한다.
 
 ---
 

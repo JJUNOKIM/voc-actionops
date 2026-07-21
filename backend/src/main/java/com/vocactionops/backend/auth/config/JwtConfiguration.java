@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 import static com.vocactionops.backend.auth.token.JwtTokenProvider.EMAIL_CLAIM;
 import static com.vocactionops.backend.auth.token.JwtTokenProvider.ORGANIZATION_ID_CLAIM;
@@ -27,6 +28,11 @@ import static com.vocactionops.backend.auth.token.JwtTokenProvider.ROLE_CLAIM;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfiguration {
+
+	@Bean
+	Clock systemClock() {
+		return Clock.systemUTC();
+	}
 
 	@Bean
 	SecretKey jwtSecretKey(JwtProperties properties) {

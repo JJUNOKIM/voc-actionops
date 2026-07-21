@@ -15,6 +15,7 @@ erDiagram
     organizations ||--o{ issues : owns
 
     users ||--o{ datasets : creates
+    users ||--o{ refresh_tokens : owns
     users o|--o{ issues : assigned_to
     users o|--o{ actions : assigned_to
     users ||--o{ issue_comments : writes
@@ -32,6 +33,7 @@ erDiagram
     issues ||--o{ actions : resolves_with
     issues ||--o{ issue_comments : discusses
     issues ||--o{ issue_metrics_snapshot : measures
+    refresh_tokens o|--o| refresh_tokens : replaced_by
 
     organizations {
         bigint id PK
@@ -49,6 +51,18 @@ erDiagram
         varchar role
         datetime created_at
         datetime updated_at
+    }
+
+    refresh_tokens {
+        bigint id PK
+        bigint user_id FK
+        varchar token_hash UK
+        varchar family_id
+        datetime expires_at
+        datetime used_at
+        datetime revoked_at
+        bigint replaced_by_token_id FK
+        datetime created_at
     }
 
     datasets {
@@ -196,6 +210,8 @@ erDiagram
 ## 핵심 제약
 
 - `users.email`: `UNIQUE`
+- `refresh_tokens.token_hash`: `UNIQUE`, refresh token 원문 대신 SHA-256 해시 저장
+- `refresh_tokens.replaced_by_token_id`: rotation으로 교체된 다음 토큰을 self-reference
 - `feedback_analysis.feedback_id`: `UNIQUE`로 피드백별 최신 분석 결과 1건 보장
 - `feedback_analysis`: 점수 범위와 PENDING/SUCCESS/FAILED 상태별 필수 데이터 조합을 `CHECK`로 검증
 - `feedback_embeddings.feedback_id`: `UNIQUE`로 피드백별 임베딩 1건 보장
@@ -207,6 +223,6 @@ erDiagram
 
 ## 구현 단계
 
-1차 MVP는 `organizations`, `users`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`를 구현한다.
+1차 MVP는 `organizations`, `users`, `refresh_tokens`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`를 구현한다.
 
 2차에서 `feedback_embeddings`, `issue_comments`를 추가하고, 성능 개선 단계에서 `issue_metrics_snapshot`을 적용한다.
