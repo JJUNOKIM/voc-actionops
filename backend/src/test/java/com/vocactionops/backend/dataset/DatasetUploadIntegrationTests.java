@@ -1,5 +1,7 @@
 package com.vocactionops.backend.dataset;
 
+import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
+import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.dataset.config.DatasetUploadProperties;
@@ -72,6 +74,12 @@ class DatasetUploadIntegrationTests {
 	private DatasetValidationErrorRepository validationErrorRepository;
 
 	@Autowired
+	private FeedbackAnalysisRepository analysisRepository;
+
+	@Autowired
+	private AiCorrectionRepository correctionRepository;
+
+	@Autowired
 	private JwtTokenProvider jwtTokenProvider;
 
 	@Autowired
@@ -89,6 +97,8 @@ class DatasetUploadIntegrationTests {
 
 	@BeforeEach
 	void setUp() throws IOException {
+		correctionRepository.deleteAll();
+		analysisRepository.deleteAll();
 		validationErrorRepository.deleteAll();
 		feedbackRepository.deleteAll();
 		datasetRepository.deleteAll();

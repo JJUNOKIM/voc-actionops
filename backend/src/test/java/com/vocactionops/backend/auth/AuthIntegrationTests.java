@@ -1,8 +1,13 @@
 package com.vocactionops.backend.auth;
 
+import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
+import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.config.JwtProperties;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
 import com.vocactionops.backend.common.exception.ErrorCode;
+import com.vocactionops.backend.dataset.repository.DatasetRepository;
+import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
+import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.organization.domain.Organization;
 import com.vocactionops.backend.organization.repository.OrganizationRepository;
 import com.vocactionops.backend.user.domain.Role;
@@ -59,6 +64,21 @@ class AuthIntegrationTests {
 	private UserRepository userRepository;
 
 	@Autowired
+	private AiCorrectionRepository correctionRepository;
+
+	@Autowired
+	private FeedbackAnalysisRepository analysisRepository;
+
+	@Autowired
+	private DatasetValidationErrorRepository validationErrorRepository;
+
+	@Autowired
+	private FeedbackRepository feedbackRepository;
+
+	@Autowired
+	private DatasetRepository datasetRepository;
+
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Autowired
@@ -78,6 +98,11 @@ class AuthIntegrationTests {
 
 	@BeforeEach
 	void setUp() {
+		correctionRepository.deleteAll();
+		analysisRepository.deleteAll();
+		validationErrorRepository.deleteAll();
+		feedbackRepository.deleteAll();
+		datasetRepository.deleteAll();
 		userRepository.deleteAll();
 		organizationRepository.deleteAll();
 

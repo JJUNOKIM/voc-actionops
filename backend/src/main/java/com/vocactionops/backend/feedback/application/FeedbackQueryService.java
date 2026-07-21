@@ -1,5 +1,7 @@
 package com.vocactionops.backend.feedback.application;
 
+import com.vocactionops.backend.analysis.application.FeedbackAnalysisView;
+import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.security.AuthenticatedUser;
 import com.vocactionops.backend.common.exception.CustomException;
 import com.vocactionops.backend.common.exception.ErrorCode;
@@ -22,9 +24,14 @@ import static com.vocactionops.backend.common.web.PageRequestFactory.newestFirst
 public class FeedbackQueryService {
 
 	private final FeedbackRepository feedbackRepository;
+	private final FeedbackAnalysisRepository analysisRepository;
 
-	public FeedbackQueryService(FeedbackRepository feedbackRepository) {
+	public FeedbackQueryService(
+			FeedbackRepository feedbackRepository,
+			FeedbackAnalysisRepository analysisRepository
+	) {
 		this.feedbackRepository = feedbackRepository;
+		this.analysisRepository = analysisRepository;
 	}
 
 	public PageResponse<FeedbackView> getFeedbacks(
@@ -42,13 +49,20 @@ public class FeedbackQueryService {
 		).map(FeedbackView::from));
 	}
 
-	public FeedbackView getFeedback(AuthenticatedUser authenticatedUser, Long feedbackId) {
+	public FeedbackDetail getFeedback(AuthenticatedUser authenticatedUser, Long feedbackId) {
 		Feedback feedback = feedbackRepository.findByIdAndOrganizationId(
 						feedbackId,
 						authenticatedUser.organizationId()
 				)
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		return FeedbackView.from(feedback);
+		FeedbackAnalysisView analysis = analysisRepository
+				.findByFeedbackIdAndFeedbackOrganizationId(
+						feedbackId,
+						authenticatedUser.organizationId()
+				)
+				.map(FeedbackAnalysisView::from)
+				.orElse(null);
+		return FeedbackDetail.from(feedback, analysis);
 	}
 
 	public record FeedbackView(
@@ -77,6 +91,38 @@ public class FeedbackQueryService {
 					feedback.getLanguage(),
 					feedback.getFeedbackCreatedAt(),
 					feedback.getIngestedAt()
+			);
+		}
+	}
+
+	public record FeedbackDetail(
+			Long id,
+			Long datasetId,
+			String externalId,
+			SourceType sourceType,
+			String customerSegment,
+			String productName,
+			BigDecimal rating,
+			String content,
+			String language,
+			LocalDateTime feedbackCreatedAt,
+			LocalDateTime ingestedAt,
+			FeedbackAnalysisView analysis
+	) {
+		private static FeedbackDetail from(Feedback feedback, FeedbackAnalysisView analysis) {
+			return new FeedbackDetail(
+					feedback.getId(),
+					feedback.getDataset().getId(),
+					feedback.getExternalId(),
+					feedback.getSourceType(),
+					feedback.getCustomerSegment(),
+					feedback.getProductName(),
+					feedback.getRating(),
+					feedback.getContent(),
+					feedback.getLanguage(),
+					feedback.getFeedbackCreatedAt(),
+					feedback.getIngestedAt(),
+					analysis
 			);
 		}
 	}

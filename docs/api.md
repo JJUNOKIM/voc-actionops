@@ -674,7 +674,42 @@ GET /api/v1/feedbacks/{feedbackId}
 
 #### <설명>
 
-피드백 원문과 수집 메타데이터를 조회한다. AI 분석 결과와 연결 이슈는 각 도메인이 구현될 때 결합한다.
+피드백 원문과 수집 메타데이터, 최신 AI 분석 결과를 함께 조회한다. 분석을 시작하지 않은 피드백은 `analysis`가 `null`이다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "datasetId": 1,
+    "externalId": "review-001",
+    "sourceType": "APP_REVIEW",
+    "customerSegment": "신규 고객",
+    "productName": "모바일 앱",
+    "rating": 1.0,
+    "content": "쿠폰 적용 후 결제가 안 돼요.",
+    "language": "ko",
+    "feedbackCreatedAt": "2026-07-01T12:00:00",
+    "ingestedAt": "2026-07-03T10:00:00",
+    "analysis": {
+      "id": 1,
+      "sentiment": "NEGATIVE",
+      "sentimentScore": -0.85,
+      "category": "PAYMENT",
+      "urgencyScore": 0.9,
+      "summary": "쿠폰 적용 후 결제를 완료하지 못함",
+      "confidenceScore": 0.88,
+      "modelName": "feedback-classifier-v1",
+      "status": "SUCCESS",
+      "errorMessage": null,
+      "analyzedAt": "2026-07-03T10:05:00"
+    }
+  },
+  "message": null
+}
+```
 
 #### <권한>
 
@@ -694,9 +729,9 @@ PATCH /api/v1/feedbacks/{feedbackId}/analysis
 
 #### <설명>
 
-AI가 분류한 결과에 문제가 있을 때 사람이 직접 수정 가능
+AI가 분류한 결과에 문제가 있을 때 사람이 직접 수정한다. `SUCCESS` 상태의 분석만 수정할 수 있다.
 
-수정 전 값과 수정 후 값은 ai_corrections에 남겨 로그 기록
+수정 가능한 필드는 `sentiment`, `category`, `urgency_score`다. 수정 직전 값과 수정 후 값은 `ai_corrections`에 남긴다.
 
 #### <Request>
 
@@ -758,7 +793,43 @@ GET /api/v1/feedbacks/{feedbackId}/corrections
 
 #### <설명>
 
-해당 피드백의 AI 분석 결과 수정 로그 확인
+해당 피드백의 AI 분석 결과 수정 로그를 최신순으로 조회한다.
+
+#### <Query Parameters>
+
+page
+
+* 페이지 번호, 기본값 0
+
+size
+
+* 페이지 크기, 기본값 20, 최대 100
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "id": 1,
+        "fieldName": "category",
+        "aiValue": "PAYMENT",
+        "correctedValue": "CHECKOUT",
+        "reason": "결제 승인 전 단계에서 발생한 오류",
+        "correctedBy": 3,
+        "createdAt": "2026-07-03T11:00:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  },
+  "message": null
+}
+```
 
 #### <권한>
 
