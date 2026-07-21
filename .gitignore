@@ -55,6 +55,7 @@ ai-worker/.pytest_cache/
 ai-worker/.mypy_cache/
 ai-worker/.ruff_cache/
 ai-worker/.venv/
+ai-worker/*.egg-info/
 ai-worker/venv/
 ai-worker/env/
 ai-worker/.env

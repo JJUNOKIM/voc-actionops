@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=78"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voc-actionops-ai-worker"
+version = "0.1.0"
+description = "Feedback analysis worker for VOC ActionOps"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.139,<0.140",
+    "openai>=2.46,<3",
+    "pydantic-settings>=2.14,<3",
+]
+
+[project.optional-dependencies]
+test = [
+    "httpx2>=2.7,<3",
+    "pytest>=9.1,<10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
