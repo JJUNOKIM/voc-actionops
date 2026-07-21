@@ -6,6 +6,7 @@ import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.config.OpenApiConfig;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.feedback.application.FeedbackQueryService;
+import com.vocactionops.backend.feedback.application.FeedbackQueryService.FeedbackDetail;
 import com.vocactionops.backend.feedback.application.FeedbackQueryService.FeedbackView;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,7 +45,7 @@ public class FeedbackController {
 	}
 
 	@GetMapping("/{feedbackId}")
-	public ApiResponse<FeedbackView> feedback(
+	public ApiResponse<FeedbackDetail> feedback(
 			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
 			@PathVariable Long feedbackId
 	) {

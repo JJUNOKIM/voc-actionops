@@ -106,6 +106,7 @@ erDiagram
         varchar status
         varchar error_message
         datetime analyzed_at
+        bigint version
     }
 
     feedback_embeddings {
@@ -194,6 +195,7 @@ erDiagram
 
 - `users.email`: `UNIQUE`
 - `feedback_analysis.feedback_id`: `UNIQUE`로 피드백별 최신 분석 결과 1건 보장
+- `feedback_analysis`: 점수 범위와 PENDING/SUCCESS/FAILED 상태별 필수 데이터 조합을 `CHECK`로 검증
 - `feedback_embeddings.feedback_id`: `UNIQUE`로 피드백별 임베딩 1건 보장
 - `issue_feedbacks(issue_id, feedback_id)`: 복합 `UNIQUE`
 - `issue_metrics_snapshot(issue_id, snapshot_date)`: 복합 `UNIQUE`

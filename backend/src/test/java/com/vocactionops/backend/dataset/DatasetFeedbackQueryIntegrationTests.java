@@ -1,10 +1,13 @@
 package com.vocactionops.backend.dataset;
 
+import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
+import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.dataset.domain.Dataset;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.dataset.repository.DatasetRepository;
+import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
 import com.vocactionops.backend.feedback.domain.Feedback;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.organization.domain.Organization;
@@ -52,6 +55,15 @@ class DatasetFeedbackQueryIntegrationTests {
 	private FeedbackRepository feedbackRepository;
 
 	@Autowired
+	private FeedbackAnalysisRepository analysisRepository;
+
+	@Autowired
+	private AiCorrectionRepository correctionRepository;
+
+	@Autowired
+	private DatasetValidationErrorRepository validationErrorRepository;
+
+	@Autowired
 	private JwtTokenProvider jwtTokenProvider;
 
 	private Organization firstOrganization;
@@ -67,6 +79,9 @@ class DatasetFeedbackQueryIntegrationTests {
 
 	@BeforeEach
 	void setUp() {
+		correctionRepository.deleteAll();
+		analysisRepository.deleteAll();
+		validationErrorRepository.deleteAll();
 		feedbackRepository.deleteAll();
 		datasetRepository.deleteAll();
 		userRepository.deleteAll();
