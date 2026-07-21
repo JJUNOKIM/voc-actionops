@@ -773,9 +773,11 @@ AI가 잘못 묶었거나, 아직 이슈에 연결되지 않은 피드백을 사
 ```json
 {
   "issueId": 10,
-  "isRepresentative": false
+  "representative": false
 }
 ```
+
+같은 피드백과 이슈 조합은 한 번만 연결할 수 있다. 수동 연결의 `linkedBy`는 `MANUAL`, `similarityScore`는 `null`로 저장한다.
 
 #### <권한>
 
@@ -899,12 +901,10 @@ size
         "title": "쿠폰 적용 후 결제 실패",
         "category": "PAYMENT",
         "priority": "P0",
-        "priorityScore": 91.25,
+        "priorityScore": null,
         "status": "IN_PROGRESS",
-        "assignee": {
-          "id": 3,
-          "name": "개발자"
-        },
+        "assigneeId": 3,
+        "assigneeName": "개발자",
         "feedbackCount": 128,
         "negativeCount": 122,
         "firstSeenAt": "2026-07-01T12:00:00",
@@ -950,6 +950,33 @@ GET /api/v1/issues/{issueId}
 
 최근 상태
 
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "title": "쿠폰 적용 후 결제 실패",
+    "description": "쿠폰 적용 이후 결제 실패 피드백이 반복적으로 발생함",
+    "category": "PAYMENT",
+    "priority": "P1",
+    "priorityScore": null,
+    "status": "IN_PROGRESS",
+    "assigneeId": 3,
+    "assigneeName": "개발자",
+    "feedbackCount": 128,
+    "negativeCount": 122,
+    "firstSeenAt": "2026-07-01T12:00:00",
+    "lastSeenAt": "2026-07-03T09:30:00",
+    "createdAt": "2026-07-03T10:00:00",
+    "updatedAt": "2026-07-03T11:00:00",
+    "actions": []
+  },
+  "message": null
+}
+```
+
 #### <권한>
 
 * ADMIN
@@ -971,6 +998,8 @@ POST /api/v1/issues
 수동으로 이슈를 생성
 
 이슈는 AI 클러스터링으로 생성되지만, 운영자가 직접 추가도 할 수 있도록 함
+
+이슈는 담당자 지정 여부와 관계없이 `NEW` 상태로 생성한다. 자동 우선순위 점수를 계산하기 전에는 `priorityScore`가 `null`이다.
 
 #### <Request>
 
@@ -1015,6 +1044,8 @@ NEW
 → MONITORING
 → CLOSED
 
+MONITORING 중 같은 문제가 재발하면 IN_PROGRESS로 되돌릴 수 있다. ASSIGNED 이후 상태로 변경하려면 담당자가 지정되어 있어야 한다.
+
 #### <설명>
 
 단순 필드 수정이 아니라 비즈니스 규칙이 들어가기 때문에, 이슈 전체 수정 API에 넣지 않고 별도 API로 분리
@@ -1023,7 +1054,7 @@ NEW
 
 * ADMIN
 * PM
-* ASSIGNEE
+* DEVELOPER (담당자)
 
 ---
 
@@ -1098,6 +1129,37 @@ size
 * DEVELOPER
 * VIEWER
 
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "id": 1,
+        "feedbackId": 25,
+        "datasetId": 3,
+        "externalId": "review-001",
+        "sourceType": "APP_REVIEW",
+        "content": "쿠폰 적용 후 결제가 안 돼요.",
+        "rating": 1.0,
+        "similarityScore": null,
+        "representative": true,
+        "linkedBy": "MANUAL",
+        "feedbackCreatedAt": "2026-07-01T12:00:00",
+        "linkedAt": "2026-07-03T10:30:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  },
+  "message": null
+}
+```
+
 ---
 
 ### 7.8 이슈 코멘트 작성
@@ -1167,6 +1229,8 @@ POST /api/v1/issues/{issueId}/actions
 * ADMIN
 * PM
 
+생성된 액션의 초기 상태는 `TODO`다. 담당자는 같은 조직의 사용자만 지정할 수 있다.
+
 ---
 
 ### 8.2 액션 상태 변경
@@ -1187,7 +1251,14 @@ PATCH /api/v1/actions/{actionId}/status
 
 * ADMIN
 * PM
-* ASSIGNEE
+* DEVELOPER (담당자)
+
+#### <허용 상태 흐름>
+
+* TODO → IN_PROGRESS → DONE
+* TODO 또는 IN_PROGRESS → CANCELED
+
+DONE으로 변경할 때 `completedAt`을 기록하며, DONE과 CANCELED은 종료 상태다.
 
 ---
 

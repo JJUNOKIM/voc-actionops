@@ -1,15 +1,11 @@
 package com.vocactionops.backend.auth;
 
-import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
-import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.config.JwtProperties;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
 import com.vocactionops.backend.common.exception.ErrorCode;
-import com.vocactionops.backend.dataset.repository.DatasetRepository;
-import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
-import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.organization.domain.Organization;
 import com.vocactionops.backend.organization.repository.OrganizationRepository;
+import com.vocactionops.backend.support.DatabaseCleaner;
 import com.vocactionops.backend.user.domain.Role;
 import com.vocactionops.backend.user.domain.User;
 import com.vocactionops.backend.user.repository.UserRepository;
@@ -64,19 +60,7 @@ class AuthIntegrationTests {
 	private UserRepository userRepository;
 
 	@Autowired
-	private AiCorrectionRepository correctionRepository;
-
-	@Autowired
-	private FeedbackAnalysisRepository analysisRepository;
-
-	@Autowired
-	private DatasetValidationErrorRepository validationErrorRepository;
-
-	@Autowired
-	private FeedbackRepository feedbackRepository;
-
-	@Autowired
-	private DatasetRepository datasetRepository;
+	private DatabaseCleaner databaseCleaner;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -98,13 +82,7 @@ class AuthIntegrationTests {
 
 	@BeforeEach
 	void setUp() {
-		correctionRepository.deleteAll();
-		analysisRepository.deleteAll();
-		validationErrorRepository.deleteAll();
-		feedbackRepository.deleteAll();
-		datasetRepository.deleteAll();
-		userRepository.deleteAll();
-		organizationRepository.deleteAll();
+		databaseCleaner.clean();
 
 		firstOrganization = organizationRepository.save(new Organization("VOC Team"));
 		secondOrganization = organizationRepository.save(new Organization("Other Team"));

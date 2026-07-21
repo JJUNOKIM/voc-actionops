@@ -14,11 +14,11 @@ import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.dataset.domain.Dataset;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.dataset.repository.DatasetRepository;
-import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
 import com.vocactionops.backend.feedback.domain.Feedback;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.organization.domain.Organization;
 import com.vocactionops.backend.organization.repository.OrganizationRepository;
+import com.vocactionops.backend.support.DatabaseCleaner;
 import com.vocactionops.backend.user.domain.Role;
 import com.vocactionops.backend.user.domain.User;
 import com.vocactionops.backend.user.repository.UserRepository;
@@ -70,7 +70,7 @@ class FeedbackAnalysisIntegrationTests {
 	private DatasetRepository datasetRepository;
 
 	@Autowired
-	private DatasetValidationErrorRepository validationErrorRepository;
+	private DatabaseCleaner databaseCleaner;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -91,13 +91,7 @@ class FeedbackAnalysisIntegrationTests {
 
 	@BeforeEach
 	void setUp() {
-		correctionRepository.deleteAll();
-		analysisRepository.deleteAll();
-		validationErrorRepository.deleteAll();
-		feedbackRepository.deleteAll();
-		datasetRepository.deleteAll();
-		userRepository.deleteAll();
-		organizationRepository.deleteAll();
+		databaseCleaner.clean();
 
 		organization = organizationRepository.save(new Organization("VOC Team"));
 		otherOrganization = organizationRepository.save(new Organization("Other Team"));

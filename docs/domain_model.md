@@ -188,6 +188,7 @@ Feedback에 대한 AI 분석 결과다.
 * last_seen_at
 * created_at
 * updated_at
+* version
 
 상태:
 
@@ -206,6 +207,8 @@ Feedback에 대한 AI 분석 결과다.
 * P2
 * P3
 
+`priority_score`는 자동 계산 전에는 비어 있을 수 있다. 수동 생성 시 선택한 우선순위 등급만 먼저 저장한다.
+
 ## 1.9 IssueFeedback
 
 Issue와 Feedback의 연결 테이블이다.
@@ -221,6 +224,8 @@ Issue와 Feedback의 연결 테이블이다.
 * is_representative
 * linked_by
 * created_at
+
+수동 연결은 `linked_by`를 MANUAL로 저장하며 유사도 점수는 비워 둔다. 피드백이 연결될 때 이슈의 `first_seen_at`과 `last_seen_at`을 원문 발생 시각 기준으로 갱신한다.
 
 ## 1.10 Action
 
@@ -240,6 +245,7 @@ Issue를 해결하기 위한 작업 항목이다.
 * created_at
 * updated_at
 * completed_at
+* version
 
 상태:
 
@@ -247,6 +253,8 @@ Issue를 해결하기 위한 작업 항목이다.
 * IN_PROGRESS
 * DONE
 * CANCELED
+
+액션은 TODO에서 시작한다. TODO는 IN_PROGRESS 또는 CANCELED로, IN_PROGRESS는 DONE 또는 CANCELED로 변경할 수 있다. DONE 전환 시 `completed_at`을 기록한다.
 
 ## 1.11 IssueComment
 
@@ -386,6 +394,8 @@ NEW
 → RESOLVED
 → MONITORING
 → CLOSED
+
+MONITORING 상태에서 같은 문제가 재발하면 IN_PROGRESS로 되돌릴 수 있다. ASSIGNED 이후 상태는 담당자가 지정된 경우에만 허용한다.
 
 권한 없는 사용자는 상태를 변경할 수 없다.
 

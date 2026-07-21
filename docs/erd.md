@@ -132,6 +132,7 @@ erDiagram
         datetime last_seen_at
         datetime created_at
         datetime updated_at
+        bigint version
     }
 
     issue_feedbacks {
@@ -155,6 +156,7 @@ erDiagram
         datetime created_at
         datetime updated_at
         datetime completed_at
+        bigint version
     }
 
     issue_comments {
@@ -198,6 +200,8 @@ erDiagram
 - `feedback_analysis`: 점수 범위와 PENDING/SUCCESS/FAILED 상태별 필수 데이터 조합을 `CHECK`로 검증
 - `feedback_embeddings.feedback_id`: `UNIQUE`로 피드백별 임베딩 1건 보장
 - `issue_feedbacks(issue_id, feedback_id)`: 복합 `UNIQUE`
+- `issues`: ASSIGNED 이후 상태에는 담당자가 필요하고, 최초·최근 발생 시각의 역전을 방지
+- `actions`: DONE 상태에만 `completed_at`을 저장
 - `issue_metrics_snapshot(issue_id, snapshot_date)`: 복합 `UNIQUE`
 - 모든 핵심 조회는 `organization_id`를 기준으로 격리
 
