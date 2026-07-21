@@ -33,6 +33,28 @@ services:
       timeout: 3s
       retries: 10
 
+  ai-worker:
+    build:
+      context: ./ai-worker
+    ports:
+      - "${AI_WORKER_PORT:-8000}:8000"
+    environment:
+      AI_PROVIDER: ${AI_PROVIDER:-deterministic}
+      AI_WORKER_API_KEY: ${AI_WORKER_API_KEY:-local-ai-worker-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-luna}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-30}
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/health')
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
 volumes:
   mysql-data:
   redis-data:

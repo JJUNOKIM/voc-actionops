@@ -36,6 +36,13 @@ flowchart LR
 - Flyway
 - Gradle 9
 
+### AI Worker
+
+- Python 3.13
+- FastAPI, Pydantic
+- OpenAI Responses API Structured Outputs
+- pytest
+
 ### Data & Infrastructure
 
 - MySQL 8.4
@@ -55,10 +62,11 @@ flowchart LR
 ```text
 .
 |-- backend/                 Spring Boot API 서버
+|-- ai-worker/               FastAPI 피드백 분석 Worker
 |-- docs/                    요구사항, 도메인, ERD, API 문서
-|-- docker-compose.yml       MySQL, Redis 로컬 환경
+|-- docker-compose.yml       MySQL, Redis, AI Worker 로컬 환경
 |-- .env.example             로컬 환경 변수 예시
-`-- .github/workflows/       백엔드 CI
+`-- .github/workflows/       백엔드 및 AI Worker CI
 ```
 
 ## 로컬 실행
@@ -79,6 +87,8 @@ cd backend
 - Health Check: `http://localhost:8080/actuator/health`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- AI Worker Health Check: `http://localhost:8000/health`
+- AI Worker API 문서: `http://localhost:8000/docs`
 
 테스트와 빌드:
 
@@ -86,7 +96,15 @@ cd backend
 cd backend
 ./gradlew clean test
 ./gradlew clean build
+
+cd ../ai-worker
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[test]"
+AI_WORKER_API_KEY=local-ai-worker-key pytest
 ```
+
+AI Worker는 기본적으로 재현 가능한 로컬 분석 provider를 사용합니다. 실제 모델을 사용할 때는 `AI_PROVIDER=openai`와 `OPENAI_API_KEY`를 설정합니다.
 
 ## 문서
 
