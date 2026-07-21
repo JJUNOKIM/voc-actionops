@@ -1,5 +1,7 @@
 package com.vocactionops.backend.dataset.web;
 
+import com.vocactionops.backend.analysis.job.application.AnalysisJobService;
+import com.vocactionops.backend.analysis.job.application.AnalysisJobView;
 import com.vocactionops.backend.auth.security.AuthenticatedUser;
 import com.vocactionops.backend.common.response.ApiResponse;
 import com.vocactionops.backend.common.response.PageResponse;
@@ -35,15 +37,18 @@ public class DatasetController {
 	private final DatasetQueryService datasetQueryService;
 	private final DatasetUploadService datasetUploadService;
 	private final DatasetValidationErrorQueryService validationErrorQueryService;
+	private final AnalysisJobService analysisJobService;
 
 	public DatasetController(
 			DatasetQueryService datasetQueryService,
 			DatasetUploadService datasetUploadService,
-			DatasetValidationErrorQueryService validationErrorQueryService
+			DatasetValidationErrorQueryService validationErrorQueryService,
+			AnalysisJobService analysisJobService
 	) {
 		this.datasetQueryService = datasetQueryService;
 		this.datasetUploadService = datasetUploadService;
 		this.validationErrorQueryService = validationErrorQueryService;
+		this.analysisJobService = analysisJobService;
 	}
 
 	@GetMapping
@@ -103,6 +108,28 @@ public class DatasetController {
 				datasetId,
 				page,
 				size
+		));
+	}
+
+	@PostMapping("/{datasetId}/analyze")
+	public ApiResponse<AnalysisJobView> analyze(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long datasetId
+	) {
+		return ApiResponse.success(
+				analysisJobService.start(authenticatedUser, datasetId),
+				"AI 분석 작업이 시작되었습니다."
+		);
+	}
+
+	@GetMapping("/{datasetId}/analysis-status")
+	public ApiResponse<AnalysisJobView> analysisStatus(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long datasetId
+	) {
+		return ApiResponse.success(analysisJobService.getStatus(
+				authenticatedUser,
+				datasetId
 		));
 	}
 }

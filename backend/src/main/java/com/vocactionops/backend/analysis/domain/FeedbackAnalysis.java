@@ -95,6 +95,26 @@ public class FeedbackAnalysis {
 			String summary,
 			BigDecimal confidenceScore
 	) {
+		complete(
+				sentiment,
+				sentimentScore,
+				category,
+				urgencyScore,
+				summary,
+				confidenceScore,
+				modelName
+		);
+	}
+
+	public void complete(
+			Sentiment sentiment,
+			BigDecimal sentimentScore,
+			String category,
+			BigDecimal urgencyScore,
+			String summary,
+			BigDecimal confidenceScore,
+			String modelName
+	) {
 		requirePending();
 		this.sentiment = Objects.requireNonNull(sentiment, "sentiment must not be null");
 		this.sentimentScore = requireScore(
@@ -120,6 +140,7 @@ public class FeedbackAnalysis {
 				4,
 				"confidenceScore"
 		);
+		this.modelName = requireText(modelName, "modelName", 100);
 		this.errorMessage = null;
 		this.analyzedAt = LocalDateTime.now();
 		this.status = AnalysisStatus.SUCCESS;

@@ -50,3 +50,10 @@ app:
     storage-directory: ${DATASET_UPLOAD_DIRECTORY:./data/uploads}
     max-file-size-bytes: ${DATASET_UPLOAD_MAX_FILE_SIZE_BYTES:5242880}
     max-records: ${DATASET_UPLOAD_MAX_RECORDS:10000}
+  ai-worker:
+    base-url: ${AI_WORKER_BASE_URL:http://localhost:8000}
+    api-key: ${AI_WORKER_API_KEY:local-ai-worker-key}
+    model-name: ${AI_WORKER_MODEL_NAME:deterministic-v1}
+    connect-timeout: ${AI_WORKER_CONNECT_TIMEOUT:2s}
+    read-timeout: ${AI_WORKER_READ_TIMEOUT:30s}
+    max-attempts: ${AI_WORKER_MAX_ATTEMPTS:3}

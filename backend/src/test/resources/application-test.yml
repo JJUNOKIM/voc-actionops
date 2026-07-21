@@ -27,3 +27,10 @@ security:
 app:
   dataset-upload:
     storage-directory: ${java.io.tmpdir}/voc-actionops-test-uploads
+  ai-worker:
+    base-url: http://localhost:8000
+    api-key: test-ai-worker-key
+    model-name: deterministic-v1
+    connect-timeout: 100ms
+    read-timeout: 100ms
+    max-attempts: 2
