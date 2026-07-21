@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
@@ -27,4 +28,11 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 	);
 
 	Optional<Feedback> findByIdAndOrganizationId(Long id, Long organizationId);
+
+	long countByDatasetIdAndOrganizationId(Long datasetId, Long organizationId);
+
+	List<Feedback> findAllByDatasetIdAndOrganizationIdOrderById(
+			Long datasetId,
+			Long organizationId
+	);
 }

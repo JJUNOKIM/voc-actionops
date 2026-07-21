@@ -601,7 +601,16 @@ POST /api/v1/datasets/{datasetId}/analyze
   "data": {
     "datasetId": 1,
     "status": "ANALYZING",
-    "jobId": "analysis-job-uuid"
+    "jobId": "analysis-job-uuid",
+    "jobStatus": "PENDING",
+    "totalCount": 10000,
+    "processedCount": 0,
+    "successCount": 0,
+    "failedCount": 0,
+    "progressRate": 0.0,
+    "failureReason": null,
+    "startedAt": null,
+    "completedAt": null
   },
   "message": "AI 분석 작업이 시작되었습니다."
 }
@@ -628,11 +637,16 @@ GET /api/v1/datasets/{datasetId}/analysis-status
   "data": {
     "datasetId": 1,
     "status": "ANALYZING",
+    "jobId": "analysis-job-uuid",
+    "jobStatus": "RUNNING",
     "totalCount": 10000,
     "processedCount": 6400,
     "successCount": 6300,
     "failedCount": 100,
-    "progressRate": 64.0
+    "progressRate": 64.0,
+    "failureReason": null,
+    "startedAt": "2026-07-21T13:30:00",
+    "completedAt": null
   },
   "message": null
 }

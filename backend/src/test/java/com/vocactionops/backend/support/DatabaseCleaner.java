@@ -1,6 +1,8 @@
 package com.vocactionops.backend.support;
 
 import com.vocactionops.backend.action.repository.ActionRepository;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobItemRepository;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobRepository;
 import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
 import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.repository.RefreshTokenRepository;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class DatabaseCleaner {
 
 	private final ActionRepository actionRepository;
+	private final AnalysisJobItemRepository analysisJobItemRepository;
+	private final AnalysisJobRepository analysisJobRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final IssueRepository issueRepository;
@@ -31,6 +35,8 @@ public class DatabaseCleaner {
 
 	public DatabaseCleaner(
 			ActionRepository actionRepository,
+			AnalysisJobItemRepository analysisJobItemRepository,
+			AnalysisJobRepository analysisJobRepository,
 			RefreshTokenRepository refreshTokenRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
 			IssueRepository issueRepository,
@@ -43,6 +49,8 @@ public class DatabaseCleaner {
 			OrganizationRepository organizationRepository
 	) {
 		this.actionRepository = actionRepository;
+		this.analysisJobItemRepository = analysisJobItemRepository;
+		this.analysisJobRepository = analysisJobRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.issueRepository = issueRepository;
@@ -62,6 +70,8 @@ public class DatabaseCleaner {
 		issueFeedbackRepository.deleteAll();
 		issueRepository.deleteAll();
 		correctionRepository.deleteAll();
+		analysisJobItemRepository.deleteAll();
+		analysisJobRepository.deleteAll();
 		analysisRepository.deleteAll();
 		validationErrorRepository.deleteAll();
 		feedbackRepository.deleteAll();

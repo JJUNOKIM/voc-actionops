@@ -3,9 +3,11 @@ package com.vocactionops.backend.dataset.repository;
 import com.vocactionops.backend.dataset.domain.Dataset;
 import com.vocactionops.backend.dataset.domain.DatasetStatus;
 import com.vocactionops.backend.dataset.domain.SourceType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +30,16 @@ public interface DatasetRepository extends JpaRepository<Dataset, Long> {
 	);
 
 	Optional<Dataset> findByIdAndOrganizationId(Long id, Long organizationId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("""
+			SELECT dataset
+			FROM Dataset dataset
+			WHERE dataset.id = :datasetId
+			  AND dataset.organization.id = :organizationId
+			""")
+	Optional<Dataset> findByIdAndOrganizationIdForUpdate(
+			@Param("datasetId") Long datasetId,
+			@Param("organizationId") Long organizationId
+	);
 }

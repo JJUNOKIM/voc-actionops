@@ -63,14 +63,26 @@ public class FeedbackAnalysisService {
 		}
 		FeedbackAnalysis analysis = getAnalysisEntity(organizationId, feedbackId);
 		try {
-			analysis.complete(
-					result.sentiment(),
-					result.sentimentScore(),
-					result.category(),
-					result.urgencyScore(),
-					result.summary(),
-					result.confidenceScore()
-			);
+			if (result.modelName() == null) {
+				analysis.complete(
+						result.sentiment(),
+						result.sentimentScore(),
+						result.category(),
+						result.urgencyScore(),
+						result.summary(),
+						result.confidenceScore()
+				);
+			} else {
+				analysis.complete(
+						result.sentiment(),
+						result.sentimentScore(),
+						result.category(),
+						result.urgencyScore(),
+						result.summary(),
+						result.confidenceScore(),
+						result.modelName()
+				);
+			}
 		} catch (IllegalArgumentException exception) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		} catch (IllegalStateException exception) {
@@ -117,7 +129,26 @@ public class FeedbackAnalysisService {
 			String category,
 			BigDecimal urgencyScore,
 			String summary,
-			BigDecimal confidenceScore
+			BigDecimal confidenceScore,
+			String modelName
 	) {
+		public AnalysisResult(
+				Sentiment sentiment,
+				BigDecimal sentimentScore,
+				String category,
+				BigDecimal urgencyScore,
+				String summary,
+				BigDecimal confidenceScore
+		) {
+			this(
+					sentiment,
+					sentimentScore,
+					category,
+					urgencyScore,
+					summary,
+					confidenceScore,
+					null
+			);
+		}
 	}
 }

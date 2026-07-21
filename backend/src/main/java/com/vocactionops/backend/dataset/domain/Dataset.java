@@ -110,6 +110,26 @@ public class Dataset extends BaseTimeEntity {
 		this.status = DatasetStatus.VALIDATED;
 	}
 
+	public void startAnalysis() {
+		if (status != DatasetStatus.VALIDATED) {
+			throw new IllegalStateException("only validated dataset can start analysis");
+		}
+		status = DatasetStatus.ANALYZING;
+	}
+
+	public void completeAnalysis(boolean hasFailures) {
+		if (status != DatasetStatus.ANALYZING) {
+			throw new IllegalStateException("dataset must be analyzing");
+		}
+		status = hasFailures ? DatasetStatus.FAILED : DatasetStatus.ANALYZED;
+	}
+
+	public void failAnalysis() {
+		if (status == DatasetStatus.ANALYZING) {
+			status = DatasetStatus.FAILED;
+		}
+	}
+
 	private static void validateOrganization(Organization organization, User user) {
 		Organization userOrganization = user.getOrganization();
 		if (organization == userOrganization) {
