@@ -9,7 +9,8 @@ import java.time.Duration;
 public record JwtProperties(
 		String issuer,
 		String secret,
-		Duration accessTokenExpiration
+		Duration accessTokenExpiration,
+		Duration refreshTokenExpiration
 ) {
 
 	private static final int MINIMUM_SECRET_BYTES = 32;
@@ -24,6 +25,10 @@ public record JwtProperties(
 		if (accessTokenExpiration == null || accessTokenExpiration.isZero()
 				|| accessTokenExpiration.isNegative()) {
 			throw new IllegalArgumentException("security.jwt.access-token-expiration must be positive");
+		}
+		if (refreshTokenExpiration == null || refreshTokenExpiration.isZero()
+				|| refreshTokenExpiration.isNegative()) {
+			throw new IllegalArgumentException("security.jwt.refresh-token-expiration must be positive");
 		}
 	}
 }

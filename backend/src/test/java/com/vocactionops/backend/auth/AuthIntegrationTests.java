@@ -1,7 +1,10 @@
 package com.vocactionops.backend.auth;
 
 import com.vocactionops.backend.auth.config.JwtProperties;
+import com.vocactionops.backend.auth.domain.RefreshToken;
+import com.vocactionops.backend.auth.repository.RefreshTokenRepository;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
+import com.vocactionops.backend.auth.token.RefreshTokenCodec;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.organization.domain.Organization;
 import com.vocactionops.backend.organization.repository.OrganizationRepository;
@@ -29,6 +32,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -73,6 +79,12 @@ class AuthIntegrationTests {
 
 	@Autowired
 	private JwtProperties jwtProperties;
+
+	@Autowired
+	private RefreshTokenRepository refreshTokenRepository;
+
+	@Autowired
+	private RefreshTokenCodec refreshTokenCodec;
 
 	private Organization firstOrganization;
 	private Organization secondOrganization;
@@ -119,12 +131,16 @@ class AuthIntegrationTests {
 				.andExpect(jsonPath("$.success").value(true))
 				.andExpect(jsonPath("$.data.tokenType").value("Bearer"))
 				.andExpect(jsonPath("$.data.expiresIn").value(1800))
+				.andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
+				.andExpect(jsonPath("$.data.refreshTokenExpiresIn").value(1209600))
 				.andExpect(jsonPath("$.data.password").doesNotExist())
 				.andExpect(jsonPath("$.data.passwordHash").doesNotExist())
 				.andReturn();
 
 		String token = accessToken(result);
+		String rawRefreshToken = refreshToken(result);
 		Jwt jwt = jwtDecoder.decode(token);
+		RefreshToken storedRefreshToken = refreshTokenRepository.findAll().get(0);
 
 		assertThat(admin.getPasswordHash()).startsWith("$2");
 		assertThat(jwt.getSubject()).isEqualTo(admin.getId().toString());
@@ -132,6 +148,116 @@ class AuthIntegrationTests {
 				.isEqualTo(firstOrganization.getId());
 		assertThat(jwt.getClaimAsString(JwtTokenProvider.EMAIL_CLAIM)).isEqualTo(admin.getEmail());
 		assertThat(jwt.getClaimAsString(JwtTokenProvider.ROLE_CLAIM)).isEqualTo(Role.ADMIN.name());
+		assertThat(storedRefreshToken.getTokenHash())
+				.isEqualTo(refreshTokenCodec.hash(rawRefreshToken))
+				.isNotEqualTo(rawRefreshToken);
+		assertThat(storedRefreshToken.getExpiresAt())
+				.isAfter(storedRefreshToken.getCreatedAt());
+	}
+
+	@Test
+	void rotatesRefreshTokenAndMarksPreviousTokenAsUsed() throws Exception {
+		MvcResult loginResult = loginResult(admin.getEmail(), ADMIN_PASSWORD);
+		String previousAccessToken = accessToken(loginResult);
+		String previousRefreshToken = refreshToken(loginResult);
+
+		MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(previousRefreshToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+				.andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
+				.andExpect(jsonPath("$.data.refreshTokenExpiresIn").value(1209600))
+				.andReturn();
+		String nextAccessToken = accessToken(refreshResult);
+		String nextRefreshToken = refreshToken(refreshResult);
+
+		assertThat(nextAccessToken).isNotEqualTo(previousAccessToken);
+		assertThat(nextRefreshToken).isNotEqualTo(previousRefreshToken);
+		List<RefreshToken> storedTokens = refreshTokenRepository.findAll();
+		assertThat(storedTokens).hasSize(2);
+		RefreshToken previous = findByRawToken(storedTokens, previousRefreshToken);
+		RefreshToken next = findByRawToken(storedTokens, nextRefreshToken);
+		assertThat(previous.getUsedAt()).isNotNull();
+		assertThat(previous.getReplacedByToken()).isNotNull();
+		assertThat(previous.getReplacedByToken().getId()).isEqualTo(next.getId());
+		assertThat(previous.getFamilyId()).isEqualTo(next.getFamilyId());
+		assertThat(next.getUsedAt()).isNull();
+		assertThat(next.getRevokedAt()).isNull();
+	}
+
+	@Test
+	void revokesTokenFamilyWhenUsedRefreshTokenIsReused() throws Exception {
+		MvcResult loginResult = loginResult(admin.getEmail(), ADMIN_PASSWORD);
+		String previousRefreshToken = refreshToken(loginResult);
+		MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(previousRefreshToken)))
+				.andExpect(status().isOk())
+				.andReturn();
+		String currentRefreshToken = refreshToken(refreshResult);
+
+		mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(previousRefreshToken)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFRESH_TOKEN.code()));
+
+		assertThat(refreshTokenRepository.findAll())
+				.hasSize(2)
+				.allSatisfy(token -> assertThat(token.getRevokedAt()).isNotNull());
+		mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(currentRefreshToken)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFRESH_TOKEN.code()));
+	}
+
+	@Test
+	void logoutRevokesRefreshTokenAndIsIdempotentForUnknownToken() throws Exception {
+		MvcResult loginResult = loginResult(admin.getEmail(), ADMIN_PASSWORD);
+		String rawRefreshToken = refreshToken(loginResult);
+
+		mockMvc.perform(post("/api/v1/auth/logout")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(rawRefreshToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("로그아웃되었습니다."));
+		assertThat(refreshTokenRepository.findAll().get(0).getRevokedAt()).isNotNull();
+
+		mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(rawRefreshToken)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFRESH_TOKEN.code()));
+		mockMvc.perform(post("/api/v1/auth/logout")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest("unknown-refresh-token")))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void rejectsExpiredAndForgedRefreshTokens() throws Exception {
+		String expiredRawToken = refreshTokenCodec.generate();
+		Instant now = Instant.now();
+		refreshTokenRepository.save(new RefreshToken(
+				admin,
+				refreshTokenCodec.hash(expiredRawToken),
+				UUID.randomUUID().toString(),
+				now.minus(2, ChronoUnit.DAYS),
+				now.minus(1, ChronoUnit.DAYS)
+		));
+
+		mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest(expiredRawToken)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFRESH_TOKEN.code()));
+		mockMvc.perform(post("/api/v1/auth/refresh")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(refreshRequest("forged-refresh-token")))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REFRESH_TOKEN.code()));
 	}
 
 	@Test
@@ -244,19 +370,43 @@ class AuthIntegrationTests {
 	}
 
 	private String login(String email, String password) throws Exception {
-		MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
+		return accessToken(loginResult(email, password));
+	}
+
+	private MvcResult loginResult(String email, String password) throws Exception {
+		return mockMvc.perform(post("/api/v1/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(loginRequest(email, password)))
 				.andExpect(status().isOk())
 				.andReturn();
-
-		return accessToken(result);
 	}
 
 	private String accessToken(MvcResult result) throws Exception {
 		return objectMapper.readTree(result.getResponse().getContentAsString())
 				.at("/data/accessToken")
 				.asString();
+	}
+
+	private String refreshToken(MvcResult result) throws Exception {
+		return objectMapper.readTree(result.getResponse().getContentAsString())
+				.at("/data/refreshToken")
+				.asString();
+	}
+
+	private RefreshToken findByRawToken(List<RefreshToken> tokens, String rawToken) {
+		String tokenHash = refreshTokenCodec.hash(rawToken);
+		return tokens.stream()
+				.filter(token -> token.getTokenHash().equals(tokenHash))
+				.findFirst()
+				.orElseThrow();
+	}
+
+	private String refreshRequest(String refreshToken) {
+		return """
+				{
+				  "refreshToken": "%s"
+				}
+				""".formatted(refreshToken);
 	}
 
 	private String loginRequest(String email, String password) {

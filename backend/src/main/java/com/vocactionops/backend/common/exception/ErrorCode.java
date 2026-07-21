@@ -6,6 +6,7 @@ public enum ErrorCode {
 
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청값이 올바르지 않습니다."),
 	INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
+	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "refresh token이 유효하지 않습니다."),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."),

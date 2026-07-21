@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Component
 public class JwtTokenProvider {
@@ -31,6 +32,7 @@ public class JwtTokenProvider {
 		Instant expiresAt = issuedAt.plus(properties.accessTokenExpiration());
 
 		JwtClaimsSet claims = JwtClaimsSet.builder()
+				.id(UUID.randomUUID().toString())
 				.issuer(properties.issuer())
 				.subject(user.getId().toString())
 				.issuedAt(issuedAt)

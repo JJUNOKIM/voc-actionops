@@ -3,6 +3,7 @@ package com.vocactionops.backend.support;
 import com.vocactionops.backend.action.repository.ActionRepository;
 import com.vocactionops.backend.analysis.repository.AiCorrectionRepository;
 import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
+import com.vocactionops.backend.auth.repository.RefreshTokenRepository;
 import com.vocactionops.backend.dataset.repository.DatasetRepository;
 import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DatabaseCleaner {
 
 	private final ActionRepository actionRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final IssueRepository issueRepository;
 	private final AiCorrectionRepository correctionRepository;
@@ -29,6 +31,7 @@ public class DatabaseCleaner {
 
 	public DatabaseCleaner(
 			ActionRepository actionRepository,
+			RefreshTokenRepository refreshTokenRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
 			IssueRepository issueRepository,
 			AiCorrectionRepository correctionRepository,
@@ -40,6 +43,7 @@ public class DatabaseCleaner {
 			OrganizationRepository organizationRepository
 	) {
 		this.actionRepository = actionRepository;
+		this.refreshTokenRepository = refreshTokenRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.issueRepository = issueRepository;
 		this.correctionRepository = correctionRepository;
@@ -53,6 +57,7 @@ public class DatabaseCleaner {
 
 	@Transactional
 	public void clean() {
+		refreshTokenRepository.deleteAll();
 		actionRepository.deleteAll();
 		issueFeedbackRepository.deleteAll();
 		issueRepository.deleteAll();
