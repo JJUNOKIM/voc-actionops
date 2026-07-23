@@ -7,6 +7,7 @@ import com.vocactionops.backend.common.exception.CustomException;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.feedback.domain.Feedback;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
+import com.vocactionops.backend.issue.application.IssuePriorityScoringService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +18,16 @@ public class FeedbackAnalysisService {
 
 	private final FeedbackRepository feedbackRepository;
 	private final FeedbackAnalysisRepository analysisRepository;
+	private final IssuePriorityScoringService priorityScoringService;
 
 	public FeedbackAnalysisService(
 			FeedbackRepository feedbackRepository,
-			FeedbackAnalysisRepository analysisRepository
+			FeedbackAnalysisRepository analysisRepository,
+			IssuePriorityScoringService priorityScoringService
 	) {
 		this.feedbackRepository = feedbackRepository;
 		this.analysisRepository = analysisRepository;
+		this.priorityScoringService = priorityScoringService;
 	}
 
 	@Transactional
@@ -88,6 +92,7 @@ public class FeedbackAnalysisService {
 		} catch (IllegalStateException exception) {
 			throw new CustomException(ErrorCode.INVALID_STATUS_TRANSITION);
 		}
+		priorityScoringService.recalculateByFeedback(organizationId, feedbackId);
 		return FeedbackAnalysisView.from(analysis);
 	}
 

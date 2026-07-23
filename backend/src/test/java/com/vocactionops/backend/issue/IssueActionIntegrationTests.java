@@ -179,6 +179,7 @@ class IssueActionIntegrationTests {
 				.andExpect(jsonPath("$.data.content[0].id").value(issueId))
 				.andExpect(jsonPath("$.data.content[0].feedbackCount").value(2))
 				.andExpect(jsonPath("$.data.content[0].negativeCount").value(1))
+				.andExpect(jsonPath("$.data.content[0].priorityScore").value(69.5))
 				.andExpect(jsonPath("$.data.content[0].assigneeId").value(developer.getId()));
 
 		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
@@ -186,6 +187,8 @@ class IssueActionIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.feedbackCount").value(2))
 				.andExpect(jsonPath("$.data.negativeCount").value(1))
+				.andExpect(jsonPath("$.data.priority").value("P1"))
+				.andExpect(jsonPath("$.data.priorityScore").value(69.5))
 				.andExpect(jsonPath("$.data.firstSeenAt").value("2026-07-01T12:00:00"))
 				.andExpect(jsonPath("$.data.lastSeenAt").value("2026-07-03T09:30:00"))
 				.andExpect(jsonPath("$.data.actions").isEmpty());
@@ -196,6 +199,65 @@ class IssueActionIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.totalElements").value(1))
 				.andExpect(jsonPath("$.data.content[*].externalId", contains("review-001")));
+	}
+
+	@Test
+	void recalculatesPriorityAfterAnalysisCorrection() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		linkFeedback(csUser, feedback.getId(), issueId, true)
+				.andExpect(status().isOk());
+
+		correctAnalysis(feedback.getId(), "sentiment", "POSITIVE", "원문은 결제 성공 경험을 설명함")
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+					.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.priority").value("P3"))
+				.andExpect(jsonPath("$.data.priorityScore").value(33.0));
+
+		correctAnalysis(feedback.getId(), "urgency_score", "0.2", "즉시 대응이 필요한 장애는 아님")
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+					.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.priority").value("P3"))
+				.andExpect(jsonPath("$.data.priorityScore").value(8.5));
+	}
+
+	@Test
+	void keepsManualPriorityUntilLinkedFeedbackAnalysisCompletes() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+
+		linkFeedback(csUser, secondFeedback.getId(), issueId, false)
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+					.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.priority").value("P1"))
+				.andExpect(jsonPath("$.data.priorityScore").isEmpty());
+
+		analysisService.startAnalysis(organization.getId(), secondFeedback.getId(), "classifier-v1");
+		analysisService.completeAnalysis(
+				organization.getId(),
+				secondFeedback.getId(),
+				new AnalysisResult(
+						Sentiment.POSITIVE,
+						new BigDecimal("0.80000"),
+						"PAYMENT",
+						new BigDecimal("0.0000"),
+						"결제가 정상적으로 완료됨",
+						new BigDecimal("0.9000")
+				)
+		);
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+					.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.priority").value("P3"))
+				.andExpect(jsonPath("$.data.priorityScore").value(1.5));
 	}
 
 	@Test
@@ -382,6 +444,22 @@ class IssueActionIntegrationTests {
 				.header("Authorization", bearer(user))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(json(Map.of("status", status))));
+	}
+
+	private org.springframework.test.web.servlet.ResultActions correctAnalysis(
+			Long feedbackId,
+			String fieldName,
+			String correctedValue,
+			String reason
+	) throws Exception {
+		return mockMvc.perform(patch("/api/v1/feedbacks/{feedbackId}/analysis", feedbackId)
+				.header("Authorization", bearer(csUser))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json(Map.of(
+						"fieldName", fieldName,
+						"correctedValue", correctedValue,
+						"reason", reason
+				))));
 	}
 
 	private org.springframework.test.web.servlet.ResultActions changeActionStatus(

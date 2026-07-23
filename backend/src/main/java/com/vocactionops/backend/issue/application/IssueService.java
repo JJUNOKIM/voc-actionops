@@ -43,6 +43,7 @@ public class IssueService {
 	private final IssueRepository issueRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final ActionRepository actionRepository;
+	private final IssuePriorityScoringService priorityScoringService;
 
 	public IssueService(
 			OrganizationRepository organizationRepository,
@@ -50,7 +51,8 @@ public class IssueService {
 			FeedbackRepository feedbackRepository,
 			IssueRepository issueRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
-			ActionRepository actionRepository
+			ActionRepository actionRepository,
+			IssuePriorityScoringService priorityScoringService
 	) {
 		this.organizationRepository = organizationRepository;
 		this.userRepository = userRepository;
@@ -58,6 +60,7 @@ public class IssueService {
 		this.issueRepository = issueRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.actionRepository = actionRepository;
+		this.priorityScoringService = priorityScoringService;
 	}
 
 	@Transactional
@@ -169,7 +172,10 @@ public class IssueService {
 			Long issueId,
 			boolean representative
 	) {
-		Issue issue = getIssueEntity(authenticatedUser, issueId);
+		Issue issue = issueRepository.findByIdAndOrganizationIdForUpdate(
+				issueId,
+				authenticatedUser.organizationId()
+		).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 		Feedback feedback = feedbackRepository.findByIdAndOrganizationId(
 					feedbackId,
 					authenticatedUser.organizationId()
@@ -186,6 +192,7 @@ public class IssueService {
 					representative,
 					LinkSource.MANUAL
 			));
+			priorityScoringService.recalculate(authenticatedUser.organizationId(), issueId);
 			return IssueFeedbackView.from(link);
 		} catch (IllegalArgumentException exception) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
