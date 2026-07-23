@@ -110,6 +110,16 @@ public class Issue extends BaseTimeEntity {
 		status = nextStatus;
 	}
 
+	public void applyCalculatedPriority(BigDecimal score, Priority calculatedPriority) {
+		BigDecimal normalizedScore = requireScore(score);
+		Priority expectedPriority = Priority.fromScore(normalizedScore);
+		if (expectedPriority != calculatedPriority) {
+			throw new IllegalArgumentException("priority does not match score");
+		}
+		this.priorityScore = normalizedScore;
+		this.priority = expectedPriority;
+	}
+
 	void registerFeedback(Feedback feedback) {
 		Feedback linkedFeedback = Objects.requireNonNull(feedback, "feedback must not be null");
 		validateOrganization(organization, linkedFeedback.getOrganization());
@@ -142,6 +152,16 @@ public class Issue extends BaseTimeEntity {
 			throw new IllegalArgumentException(fieldName + " is invalid");
 		}
 		return value.trim();
+	}
+
+	private static BigDecimal requireScore(BigDecimal value) {
+		if (value == null
+				|| value.compareTo(BigDecimal.ZERO) < 0
+				|| value.compareTo(BigDecimal.valueOf(100)) > 0
+				|| value.stripTrailingZeros().scale() > 2) {
+			throw new IllegalArgumentException("priorityScore is invalid");
+		}
+		return value.setScale(2);
 	}
 
 	public Long getId() {

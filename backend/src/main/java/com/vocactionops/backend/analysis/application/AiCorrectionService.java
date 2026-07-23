@@ -13,6 +13,7 @@ import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.feedback.domain.Feedback;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
+import com.vocactionops.backend.issue.application.IssuePriorityScoringService;
 import com.vocactionops.backend.user.domain.User;
 import com.vocactionops.backend.user.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,17 +34,20 @@ public class AiCorrectionService {
 	private final FeedbackAnalysisRepository analysisRepository;
 	private final AiCorrectionRepository correctionRepository;
 	private final UserRepository userRepository;
+	private final IssuePriorityScoringService priorityScoringService;
 
 	public AiCorrectionService(
 			FeedbackRepository feedbackRepository,
 			FeedbackAnalysisRepository analysisRepository,
 			AiCorrectionRepository correctionRepository,
-			UserRepository userRepository
+			UserRepository userRepository,
+			IssuePriorityScoringService priorityScoringService
 	) {
 		this.feedbackRepository = feedbackRepository;
 		this.analysisRepository = analysisRepository;
 		this.correctionRepository = correctionRepository;
 		this.userRepository = userRepository;
+		this.priorityScoringService = priorityScoringService;
 	}
 
 	@Transactional
@@ -87,6 +91,13 @@ public class AiCorrectionService {
 					reason,
 					correctedBy
 			));
+			if (correctionField == AiCorrectionField.SENTIMENT
+					|| correctionField == AiCorrectionField.URGENCY_SCORE) {
+				priorityScoringService.recalculateByFeedback(
+						authenticatedUser.organizationId(),
+						feedbackId
+				);
+			}
 		} catch (CustomException exception) {
 			throw exception;
 		} catch (IllegalArgumentException exception) {

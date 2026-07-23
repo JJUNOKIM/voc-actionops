@@ -4,10 +4,12 @@ import com.vocactionops.backend.issue.application.IssueSummary;
 import com.vocactionops.backend.issue.domain.Issue;
 import com.vocactionops.backend.issue.domain.IssueStatus;
 import com.vocactionops.backend.issue.domain.Priority;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +20,18 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
 	@EntityGraph(attributePaths = "assignee")
 	Optional<Issue> findByIdAndOrganizationId(Long id, Long organizationId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("""
+			SELECT issue
+			FROM Issue issue
+			WHERE issue.id = :issueId
+			  AND issue.organization.id = :organizationId
+			""")
+	Optional<Issue> findByIdAndOrganizationIdForUpdate(
+			@Param("issueId") Long issueId,
+			@Param("organizationId") Long organizationId
+	);
 
 	@Query(
 			value = """
