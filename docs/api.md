@@ -91,6 +91,10 @@ CSV_VALIDATION_FAILED
 
 * CSV 검증 실패
 
+ANALYSIS_NOT_READY
+
+* 완료된 AI 분석 결과가 필요한 요청
+
 AI_ANALYSIS_FAILED
 
 * AI 분석 실패
@@ -852,7 +856,79 @@ AI가 잘못 묶었거나, 아직 이슈에 연결되지 않은 피드백을 사
 
 ---
 
-### 6.5 AI 수정 이력 조회
+### 6.5 기존 이슈 후보 조회
+
+```http
+GET /api/v1/feedbacks/{feedbackId}/issue-candidates?limit=5
+```
+
+#### <설명>
+
+분석이 완료된 피드백과 유사한 기존 이슈를 점수순으로 조회한다. 같은 조직에 속하고 닫히지 않은 동일 카테고리 이슈만 비교하며, 이미 해당 피드백과 연결된 이슈는 제외한다. `limit` 기본값은 5이고 최대 10이다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "issueId": 10,
+      "title": "쿠폰 적용 후 결제 실패",
+      "category": "PAYMENT",
+      "priority": "P1",
+      "status": "NEW",
+      "similarityScore": 0.7408,
+      "matchSignals": {
+        "categoryMatched": true,
+        "categoryScore": 0.35,
+        "characterSimilarity": 0.5842,
+        "tokenSimilarity": 0.6125,
+        "textSimilarity": 0.6012
+      }
+    }
+  ],
+  "message": null
+}
+```
+
+완료된 분석이 없거나 분석 상태가 `PENDING`, `FAILED`이면 `ANALYSIS_NOT_READY`를 반환한다.
+
+#### <권한>
+
+* AUTHENTICATED
+
+---
+
+### 6.6 추천 이슈 연결 확정
+
+```http
+POST /api/v1/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm
+```
+
+#### <설명>
+
+사용자가 추천 후보를 검토한 뒤 연결을 확정한다. 서버는 확정 시점의 분석 결과로 후보 점수를 다시 계산하므로 카테고리 보정이나 이슈 상태 변경으로 더 이상 후보가 아니면 연결하지 않는다.
+
+#### <Request>
+
+```json
+{
+  "representative": true
+}
+```
+
+확정된 연결은 `linkedBy`를 `AI`로, 확정 시점의 `similarityScore`와 함께 저장한다. 연결 이후 이슈 우선순위를 다시 계산한다.
+
+#### <권한>
+
+* ADMIN
+* PM
+* CS
+
+---
+
+### 6.7 AI 수정 이력 조회
 
 ```http
 GET /api/v1/feedbacks/{feedbackId}/corrections
@@ -1581,6 +1657,8 @@ GET /api/v1/dashboard/summary
 ```http
 GET  /api/v1/datasets/{datasetId}/validation-errors
 POST /api/v1/feedbacks/{feedbackId}/issue-links
+GET  /api/v1/feedbacks/{feedbackId}/issue-candidates
+POST /api/v1/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm
 GET  /api/v1/issues/{issueId}/feedbacks
 
 GET /api/v1/dashboard/category-breakdown
@@ -1599,8 +1677,6 @@ refresh token 저장 위치
 대용량 CSV 비동기 처리 전환 기준
 
 AI 분석 실패 건 재시도 방식
-
-issue clustering threshold 기준
 
 dashboard 집계 시점
 

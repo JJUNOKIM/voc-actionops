@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
@@ -31,6 +32,27 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 	Optional<Issue> findByIdAndOrganizationIdForUpdate(
 			@Param("issueId") Long issueId,
 			@Param("organizationId") Long organizationId
+	);
+
+	@Query("""
+			SELECT issue
+			FROM Issue issue
+			WHERE issue.organization.id = :organizationId
+			  AND UPPER(issue.category) = UPPER(:category)
+			  AND issue.status <> com.vocactionops.backend.issue.domain.IssueStatus.CLOSED
+			  AND NOT EXISTS (
+				  SELECT link.id
+				  FROM IssueFeedback link
+				  WHERE link.issue = issue
+				    AND link.feedback.id = :feedbackId
+			  )
+			ORDER BY issue.updatedAt DESC, issue.id DESC
+			""")
+	List<Issue> findCandidateIssues(
+			@Param("organizationId") Long organizationId,
+			@Param("feedbackId") Long feedbackId,
+			@Param("category") String category,
+			Pageable pageable
 	);
 
 	@Query(

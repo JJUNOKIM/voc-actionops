@@ -4,6 +4,8 @@ import com.vocactionops.backend.auth.security.AuthenticatedUser;
 import com.vocactionops.backend.common.response.ApiResponse;
 import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.config.OpenApiConfig;
+import com.vocactionops.backend.issue.application.IssueCandidateService;
+import com.vocactionops.backend.issue.application.IssueCandidateService.IssueCandidateView;
 import com.vocactionops.backend.issue.application.IssueService;
 import com.vocactionops.backend.issue.application.IssueService.IssueFeedbackView;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,15 +21,50 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH_SCHEME)
 public class IssueFeedbackController {
 
 	private final IssueService issueService;
+	private final IssueCandidateService issueCandidateService;
 
-	public IssueFeedbackController(IssueService issueService) {
+	public IssueFeedbackController(
+			IssueService issueService,
+			IssueCandidateService issueCandidateService
+	) {
 		this.issueService = issueService;
+		this.issueCandidateService = issueCandidateService;
+	}
+
+	@GetMapping("/feedbacks/{feedbackId}/issue-candidates")
+	public ApiResponse<List<IssueCandidateView>> candidates(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId,
+			@RequestParam(defaultValue = "5") int limit
+	) {
+		return ApiResponse.success(issueCandidateService.getCandidates(
+				authenticatedUser,
+				feedbackId,
+				limit
+		));
+	}
+
+	@PostMapping("/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm")
+	public ApiResponse<IssueFeedbackView> confirmCandidate(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId,
+			@PathVariable Long issueId,
+			@Valid @RequestBody ConfirmCandidateRequest request
+	) {
+		return ApiResponse.success(issueCandidateService.confirmCandidate(
+				authenticatedUser,
+				feedbackId,
+				issueId,
+				request.representative()
+		), "추천 이슈 연결이 확정되었습니다.");
 	}
 
 	@PostMapping("/feedbacks/{feedbackId}/issue-links")
@@ -65,5 +102,8 @@ public class IssueFeedbackController {
 			@NotNull @Positive Long issueId,
 			boolean representative
 	) {
+	}
+
+	public record ConfirmCandidateRequest(boolean representative) {
 	}
 }
