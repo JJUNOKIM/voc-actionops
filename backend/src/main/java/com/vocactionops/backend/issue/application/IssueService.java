@@ -8,7 +8,6 @@ import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.feedback.domain.Feedback;
-import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.issue.domain.Issue;
 import com.vocactionops.backend.issue.domain.IssueFeedback;
 import com.vocactionops.backend.issue.domain.IssueStatus;
@@ -39,28 +38,25 @@ public class IssueService {
 
 	private final OrganizationRepository organizationRepository;
 	private final UserRepository userRepository;
-	private final FeedbackRepository feedbackRepository;
 	private final IssueRepository issueRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final ActionRepository actionRepository;
-	private final IssuePriorityScoringService priorityScoringService;
+	private final IssueFeedbackLinkService issueFeedbackLinkService;
 
 	public IssueService(
 			OrganizationRepository organizationRepository,
 			UserRepository userRepository,
-			FeedbackRepository feedbackRepository,
 			IssueRepository issueRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
 			ActionRepository actionRepository,
-			IssuePriorityScoringService priorityScoringService
+			IssueFeedbackLinkService issueFeedbackLinkService
 	) {
 		this.organizationRepository = organizationRepository;
 		this.userRepository = userRepository;
-		this.feedbackRepository = feedbackRepository;
 		this.issueRepository = issueRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.actionRepository = actionRepository;
-		this.priorityScoringService = priorityScoringService;
+		this.issueFeedbackLinkService = issueFeedbackLinkService;
 	}
 
 	@Transactional
@@ -172,31 +168,14 @@ public class IssueService {
 			Long issueId,
 			boolean representative
 	) {
-		Issue issue = issueRepository.findByIdAndOrganizationIdForUpdate(
+		return IssueFeedbackView.from(issueFeedbackLinkService.link(
+				authenticatedUser.organizationId(),
+				feedbackId,
 				issueId,
-				authenticatedUser.organizationId()
-		).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		Feedback feedback = feedbackRepository.findByIdAndOrganizationId(
-					feedbackId,
-					authenticatedUser.organizationId()
-			)
-				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		if (issueFeedbackRepository.existsByIssueIdAndFeedbackId(issueId, feedbackId)) {
-			throw new CustomException(ErrorCode.DUPLICATED_RESOURCE);
-		}
-		try {
-			IssueFeedback link = issueFeedbackRepository.save(new IssueFeedback(
-					issue,
-					feedback,
-					null,
-					representative,
-					LinkSource.MANUAL
-			));
-			priorityScoringService.recalculate(authenticatedUser.organizationId(), issueId);
-			return IssueFeedbackView.from(link);
-		} catch (IllegalArgumentException exception) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
-		}
+				null,
+				representative,
+				LinkSource.MANUAL
+		));
 	}
 
 	public PageResponse<IssueFeedbackView> getIssueFeedbacks(
@@ -301,7 +280,7 @@ public class IssueService {
 			LocalDateTime feedbackCreatedAt,
 			LocalDateTime linkedAt
 	) {
-		private static IssueFeedbackView from(IssueFeedback link) {
+		static IssueFeedbackView from(IssueFeedback link) {
 			Feedback feedback = link.getFeedback();
 			return new IssueFeedbackView(
 					link.getId(),
