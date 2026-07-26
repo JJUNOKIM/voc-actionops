@@ -11,8 +11,10 @@ public enum ErrorCode {
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."),
 	DUPLICATED_RESOURCE(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다."),
+	STALE_RESOURCE(HttpStatus.CONFLICT, "리소스가 변경되었습니다. 최신 상태를 다시 조회해 주세요."),
 	CSV_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "CSV 데이터 검증에 실패했습니다."),
 	ANALYSIS_NOT_READY(HttpStatus.CONFLICT, "완료된 AI 분석 결과가 필요합니다."),
+	ISSUE_CANDIDATE_EXISTS(HttpStatus.CONFLICT, "기존 이슈 후보를 먼저 검토해야 합니다."),
 	AI_ANALYSIS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AI 분석 처리에 실패했습니다."),
 	INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "변경할 수 없는 상태입니다."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");

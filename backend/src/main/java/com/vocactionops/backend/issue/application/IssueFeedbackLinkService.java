@@ -43,9 +43,9 @@ public class IssueFeedbackLinkService {
 			boolean representative,
 			LinkSource linkSource
 	) {
-		Issue issue = issueRepository.findByIdAndOrganizationIdForUpdate(issueId, organizationId)
+		Feedback feedback = feedbackRepository.findByIdAndOrganizationIdForUpdate(feedbackId, organizationId)
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-		Feedback feedback = feedbackRepository.findByIdAndOrganizationId(feedbackId, organizationId)
+		Issue issue = issueRepository.findByIdAndOrganizationIdForUpdate(issueId, organizationId)
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 		if (issueFeedbackRepository.existsByIssueIdAndFeedbackId(issueId, feedbackId)) {
 			throw new CustomException(ErrorCode.DUPLICATED_RESOURCE);

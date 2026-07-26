@@ -87,6 +87,10 @@ DUPLICATED_RESOURCE
 
 * 중복 데이터
 
+STALE_RESOURCE
+
+* 조회 이후 분석 결과가 변경된 요청
+
 CSV_VALIDATION_FAILED
 
 * CSV 검증 실패
@@ -94,6 +98,10 @@ CSV_VALIDATION_FAILED
 ANALYSIS_NOT_READY
 
 * 완료된 AI 분석 결과가 필요한 요청
+
+ISSUE_CANDIDATE_EXISTS
+
+* 신규 이슈를 만들기 전에 검토할 기존 이슈 후보가 있음
 
 AI_ANALYSIS_FAILED
 
@@ -928,7 +936,76 @@ POST /api/v1/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm
 
 ---
 
-### 6.7 AI 수정 이력 조회
+### 6.7 신규 이슈 초안 조회
+
+```http
+GET /api/v1/feedbacks/{feedbackId}/issue-draft
+```
+
+#### <설명>
+
+기존 추천 후보가 없고 아직 이슈에 연결되지 않은 피드백에 대해 편집 가능한 신규 이슈 초안을 반환한다. 분석 요약을 제목으로 사용하고 끝 문장부호와 연속 공백을 정리한다. 설명은 원문 피드백으로 채우며 이슈 컬럼 길이에 맞춰 제목 150자, 설명 1000자 이내로 제한한다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "feedbackId": 1,
+    "analysisVersion": 1,
+    "title": "쿠폰 적용 후 결제를 완료하지 못함",
+    "description": "쿠폰 적용 후 결제가 안 돼요.",
+    "category": "PAYMENT",
+    "sentiment": "NEGATIVE",
+    "urgencyScore": 0.9,
+    "confidenceScore": 0.88
+  },
+  "message": null
+}
+```
+
+이미 연결된 피드백은 `DUPLICATED_RESOURCE`, 기준을 만족하는 기존 후보가 있으면 `ISSUE_CANDIDATE_EXISTS`를 반환한다.
+
+#### <권한>
+
+* AUTHENTICATED
+
+---
+
+### 6.8 신규 이슈 초안 확정
+
+```http
+POST /api/v1/feedbacks/{feedbackId}/issue-draft/confirm
+```
+
+#### <설명>
+
+운영자가 초안의 제목과 설명을 검토·수정한 뒤 신규 이슈 생성을 확정한다. 카테고리는 요청값을 받지 않고 확정 시점의 분석 결과를 사용한다.
+
+#### <Request>
+
+```json
+{
+  "analysisVersion": 1,
+  "title": "쿠폰 적용 후 결제 실패",
+  "description": "쿠폰을 적용한 주문에서 결제가 완료되지 않는다.",
+  "assigneeId": 4
+}
+```
+
+`analysisVersion`이 최신 버전과 다르면 `STALE_RESOURCE`를 반환하고 새 초안을 다시 조회해야 한다. 확정 직전에도 기존 연결과 추천 후보를 다시 확인한다.
+
+이슈 생성과 최초 피드백 연결은 한 트랜잭션에서 처리한다. 최초 피드백은 대표 피드백이며 `linkedBy=AI`, `similarityScore=1.0000`으로 저장한다. 연결 직후 이슈 우선순위를 계산한다. 같은 피드백의 동시 확정 요청은 피드백과 분석 행 잠금으로 직렬화한다.
+
+#### <권한>
+
+* ADMIN
+* PM
+
+---
+
+### 6.9 AI 수정 이력 조회
 
 ```http
 GET /api/v1/feedbacks/{feedbackId}/corrections
@@ -1659,6 +1736,8 @@ GET  /api/v1/datasets/{datasetId}/validation-errors
 POST /api/v1/feedbacks/{feedbackId}/issue-links
 GET  /api/v1/feedbacks/{feedbackId}/issue-candidates
 POST /api/v1/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm
+GET  /api/v1/feedbacks/{feedbackId}/issue-draft
+POST /api/v1/feedbacks/{feedbackId}/issue-draft/confirm
 GET  /api/v1/issues/{issueId}/feedbacks
 
 GET /api/v1/dashboard/category-breakdown
