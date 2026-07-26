@@ -225,7 +225,7 @@ Issue와 Feedback의 연결 테이블이다.
 * linked_by
 * created_at
 
-수동 연결은 `linked_by`를 MANUAL로 저장하며 유사도 점수는 비워 둔다. 추천 후보를 사용자가 확정한 연결은 `linked_by`를 AI로 저장하고 확정 시점의 유사도 점수를 함께 남긴다. 피드백이 연결될 때 이슈의 `first_seen_at`과 `last_seen_at`을 원문 발생 시각 기준으로 갱신한다.
+수동 연결은 `linked_by`를 MANUAL로 저장하며 유사도 점수는 비워 둔다. 추천 후보를 사용자가 확정한 연결은 `linked_by`를 AI로 저장하고 확정 시점의 유사도 점수를 함께 남긴다. 신규 이슈 초안을 확정할 때 최초 피드백은 해당 이슈를 만든 기준 데이터이므로 `linked_by`를 AI, `similarity_score`를 1.0000, `is_representative`를 true로 저장한다. 피드백이 연결될 때 이슈의 `first_seen_at`과 `last_seen_at`을 원문 발생 시각 기준으로 갱신한다.
 
 ## 1.10 Action
 
@@ -389,7 +389,9 @@ SUCCESS 상태로 분석된 Feedback은 같은 조직의 닫히지 않은 기존
 
 후보 조회 결과에는 카테고리, 문자, 단어, 결합 텍스트 점수를 각각 제공해 추천 근거를 확인할 수 있게 한다. 실제 연결은 자동으로 수행하지 않고 ADMIN, PM, CS 사용자가 확정한다. 확정 요청에서는 최신 분석 결과로 점수를 다시 계산하고 기준을 만족할 때만 AI 추천 출처와 점수를 IssueFeedback에 저장한다.
 
-기준을 만족하는 기존 후보가 없으면 운영자가 새 Issue를 생성하거나 수동 연결할 수 있다. 자동 신규 Issue 생성은 오분류 정정 정책과 제목 생성 규칙을 정의한 이후 추가한다.
+기준을 만족하는 기존 후보가 없고 아직 다른 Issue에 연결되지 않은 Feedback은 신규 Issue 초안을 조회할 수 있다. 초안은 FeedbackAnalysis의 summary를 제목으로, Feedback 원문을 설명으로 사용하며 저장하지 않고 요청 시 생성한다. 사용자는 제목과 설명을 편집할 수 있지만 category는 확정 시점의 최신 분석값을 사용한다.
+
+초안 응답에는 FeedbackAnalysis의 version을 포함한다. ADMIN 또는 PM이 확정할 때 버전, 기존 연결, 기존 후보를 다시 확인하며 하나라도 변경되었으면 Issue를 만들지 않는다. 같은 Feedback의 동시 확정은 Feedback과 FeedbackAnalysis 행을 잠가 하나의 요청만 생성과 최초 연결을 완료하도록 한다. Issue 생성, 대표 Feedback 연결, 우선순위 계산은 한 트랜잭션에서 처리한다.
 
 ## 3.4 대표 피드백
 

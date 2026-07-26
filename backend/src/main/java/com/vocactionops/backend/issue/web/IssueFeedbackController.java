@@ -6,12 +6,18 @@ import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.config.OpenApiConfig;
 import com.vocactionops.backend.issue.application.IssueCandidateService;
 import com.vocactionops.backend.issue.application.IssueCandidateService.IssueCandidateView;
+import com.vocactionops.backend.issue.application.IssueDraftService;
+import com.vocactionops.backend.issue.application.IssueDraftService.IssueDraftView;
 import com.vocactionops.backend.issue.application.IssueService;
+import com.vocactionops.backend.issue.application.IssueService.IssueDetail;
 import com.vocactionops.backend.issue.application.IssueService.IssueFeedbackView;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,13 +36,40 @@ public class IssueFeedbackController {
 
 	private final IssueService issueService;
 	private final IssueCandidateService issueCandidateService;
+	private final IssueDraftService issueDraftService;
 
 	public IssueFeedbackController(
 			IssueService issueService,
-			IssueCandidateService issueCandidateService
+			IssueCandidateService issueCandidateService,
+			IssueDraftService issueDraftService
 	) {
 		this.issueService = issueService;
 		this.issueCandidateService = issueCandidateService;
+		this.issueDraftService = issueDraftService;
+	}
+
+	@GetMapping("/feedbacks/{feedbackId}/issue-draft")
+	public ApiResponse<IssueDraftView> issueDraft(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId
+	) {
+		return ApiResponse.success(issueDraftService.getDraft(authenticatedUser, feedbackId));
+	}
+
+	@PostMapping("/feedbacks/{feedbackId}/issue-draft/confirm")
+	public ApiResponse<IssueDetail> confirmIssueDraft(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId,
+			@Valid @RequestBody ConfirmIssueDraftRequest request
+	) {
+		return ApiResponse.success(issueDraftService.confirmDraft(
+				authenticatedUser,
+				feedbackId,
+				request.analysisVersion(),
+				request.title(),
+				request.description(),
+				request.assigneeId()
+		), "신규 이슈가 생성되었습니다.");
 	}
 
 	@GetMapping("/feedbacks/{feedbackId}/issue-candidates")
@@ -105,5 +138,13 @@ public class IssueFeedbackController {
 	}
 
 	public record ConfirmCandidateRequest(boolean representative) {
+	}
+
+	public record ConfirmIssueDraftRequest(
+			@NotNull @PositiveOrZero Long analysisVersion,
+			@NotBlank @Size(max = 150) String title,
+			@NotBlank @Size(max = 1000) String description,
+			@Positive Long assigneeId
+	) {
 	}
 }

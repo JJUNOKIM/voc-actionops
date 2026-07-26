@@ -14,6 +14,8 @@ public interface IssueFeedbackRepository extends JpaRepository<IssueFeedback, Lo
 
 	boolean existsByIssueIdAndFeedbackId(Long issueId, Long feedbackId);
 
+	boolean existsByFeedbackId(Long feedbackId);
+
 	long countByIssueId(Long issueId);
 
 	@Query("""
