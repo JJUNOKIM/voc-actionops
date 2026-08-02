@@ -236,6 +236,7 @@ public class IssueService {
 				issueFeedbackRepository.countNegativeByIssueId(issue.getId()),
 				issue.getFirstSeenAt(),
 				issue.getLastSeenAt(),
+				issue.getResolvedAt(),
 				issue.getCreatedAt(),
 				issue.getUpdatedAt(),
 				actions
@@ -260,6 +261,7 @@ public class IssueService {
 			long negativeCount,
 			LocalDateTime firstSeenAt,
 			LocalDateTime lastSeenAt,
+			LocalDateTime resolvedAt,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
 			List<ActionView> actions

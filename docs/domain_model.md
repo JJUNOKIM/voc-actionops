@@ -186,6 +186,7 @@ Feedback에 대한 AI 분석 결과다.
 * assignee_id
 * first_seen_at
 * last_seen_at
+* resolved_at
 * created_at
 * updated_at
 * version
@@ -208,6 +209,8 @@ Feedback에 대한 AI 분석 결과다.
 * P3
 
 `priority_score`는 자동 계산 전에는 비어 있을 수 있다. 수동 생성 시 선택한 우선순위 등급만 먼저 저장한다.
+
+`resolved_at`은 Issue가 RESOLVED 상태가 된 시각이다. 이후 MONITORING과 CLOSED 상태에서도 유지하며, MONITORING 중 문제가 재발해 IN_PROGRESS로 돌아가면 비운다. 다시 해결되면 새로운 해결 시각을 기록한다.
 
 ## 1.9 IssueFeedback
 
@@ -420,6 +423,8 @@ NEW
 → CLOSED
 
 MONITORING 상태에서 같은 문제가 재발하면 IN_PROGRESS로 되돌릴 수 있다. ASSIGNED 이후 상태는 담당자가 지정된 경우에만 허용한다.
+
+RESOLVED 전환 시 `resolved_at`을 기록해 생성부터 해결까지의 실제 처리 시간을 계산한다. MONITORING에서 IN_PROGRESS로 돌아가면 이전 값을 비워 재해결 시간을 별도로 측정한다.
 
 권한 없는 사용자는 상태를 변경할 수 없다.
 

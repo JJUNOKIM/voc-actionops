@@ -144,6 +144,7 @@ erDiagram
         bigint assignee_id FK
         datetime first_seen_at
         datetime last_seen_at
+        datetime resolved_at
         datetime created_at
         datetime updated_at
         bigint version

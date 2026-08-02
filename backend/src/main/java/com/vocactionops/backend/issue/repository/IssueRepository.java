@@ -70,6 +70,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 						COALESCE(SUM(CASE WHEN analysis.sentiment = com.vocactionops.backend.analysis.domain.Sentiment.NEGATIVE THEN 1 ELSE 0 END), 0),
 						issue.firstSeenAt,
 						issue.lastSeenAt,
+						issue.resolvedAt,
 						issue.createdAt,
 						issue.updatedAt
 					)
@@ -89,7 +90,8 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 					  AND (:toDateExclusive IS NULL OR issue.createdAt < :toDateExclusive)
 					GROUP BY issue.id, issue.title, issue.category, issue.priority,
 					         issue.priorityScore, issue.status, assignee.id, assignee.name,
-					         issue.firstSeenAt, issue.lastSeenAt, issue.createdAt, issue.updatedAt
+					         issue.firstSeenAt, issue.lastSeenAt, issue.resolvedAt,
+					         issue.createdAt, issue.updatedAt
 					""",
 			countQuery = """
 					SELECT COUNT(issue)
