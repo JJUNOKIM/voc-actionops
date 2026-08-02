@@ -279,12 +279,15 @@ class IssueActionIntegrationTests {
 		changeIssueStatus(developer, issueId, "IN_PROGRESS")
 				.andExpect(status().isOk());
 		changeIssueStatus(developer, issueId, "RESOLVED")
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.resolvedAt").isNotEmpty());
 		changeIssueStatus(pm, issueId, "MONITORING")
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.resolvedAt").isNotEmpty());
 		changeIssueStatus(pm, issueId, "IN_PROGRESS")
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.data.status").value("IN_PROGRESS"));
+				.andExpect(jsonPath("$.data.status").value("IN_PROGRESS"))
+				.andExpect(jsonPath("$.data.resolvedAt").doesNotExist());
 
 		changeIssueStatus(viewer, issueId, "RESOLVED")
 				.andExpect(status().isForbidden());

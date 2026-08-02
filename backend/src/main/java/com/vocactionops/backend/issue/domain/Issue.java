@@ -63,6 +63,9 @@ public class Issue extends BaseTimeEntity {
 	@Column(name = "last_seen_at")
 	private LocalDateTime lastSeenAt;
 
+	@Column(name = "resolved_at")
+	private LocalDateTime resolvedAt;
+
 	@Version
 	@Column(nullable = false)
 	private long version;
@@ -106,6 +109,11 @@ public class Issue extends BaseTimeEntity {
 		}
 		if (nextStatus.requiresAssignee() && assignee == null) {
 			throw new IllegalStateException("assignee is required for target status");
+		}
+		if (nextStatus == IssueStatus.RESOLVED) {
+			resolvedAt = LocalDateTime.now();
+		} else if (status == IssueStatus.MONITORING && nextStatus == IssueStatus.IN_PROGRESS) {
+			resolvedAt = null;
 		}
 		status = nextStatus;
 	}
@@ -206,6 +214,10 @@ public class Issue extends BaseTimeEntity {
 
 	public LocalDateTime getLastSeenAt() {
 		return lastSeenAt;
+	}
+
+	public LocalDateTime getResolvedAt() {
+		return resolvedAt;
 	}
 
 	public long getVersion() {

@@ -1126,7 +1126,8 @@ size
         "feedbackCount": 128,
         "negativeCount": 122,
         "firstSeenAt": "2026-07-01T12:00:00",
-        "lastSeenAt": "2026-07-03T09:30:00"
+        "lastSeenAt": "2026-07-03T09:30:00",
+        "resolvedAt": null
       }
     ],
     "page": 0,
@@ -1187,6 +1188,7 @@ GET /api/v1/issues/{issueId}
     "negativeCount": 122,
     "firstSeenAt": "2026-07-01T12:00:00",
     "lastSeenAt": "2026-07-03T09:30:00",
+    "resolvedAt": null,
     "createdAt": "2026-07-03T10:00:00",
     "updatedAt": "2026-07-03T11:00:00",
     "actions": []
@@ -1525,6 +1527,12 @@ from
 to
 
 * 종료일
+
+두 날짜는 선택값이며 `to`로 지정한 날짜의 마지막 시각까지 포함한다. 피드백 지표는 원문 발생 시각을 사용하고, 값이 없으면 수집 시각을 사용한다. 신규 이슈 수는 생성 시각을 기준으로 기간을 적용한다.
+
+부정 피드백 비율은 분석이 완료된 피드백만 분모로 계산하며 완료된 분석이 없으면 `0.00`을 반환한다. P0, P1, 미해결 이슈 수는 기간과 관계없이 현재 활성 상태인 `NEW`, `TRIAGED`, `ASSIGNED`, `IN_PROGRESS` 이슈를 집계해 오래된 미해결 이슈가 누락되지 않게 한다.
+
+평균 처리 시간은 해당 기간에 `RESOLVED`가 된 이슈의 생성 시각부터 해결 시각까지를 시간 단위로 계산한다. 해결된 이슈가 없으면 `null`을 반환한다.
 
 #### <Response 예시>
 

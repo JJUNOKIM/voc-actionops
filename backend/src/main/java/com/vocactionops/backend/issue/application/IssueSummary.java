@@ -19,6 +19,7 @@ public record IssueSummary(
 		long negativeCount,
 		LocalDateTime firstSeenAt,
 		LocalDateTime lastSeenAt,
+		LocalDateTime resolvedAt,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt
 ) {
