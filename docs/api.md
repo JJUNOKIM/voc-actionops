@@ -1569,7 +1569,46 @@ GET /api/v1/dashboard/category-breakdown
 
 #### <설명>
 
-카테고리별 이슈 수, 피드백 수, 부정 비율을 조회
+카테고리별 현재 활성 이슈 수와 기간 내 분석 완료 피드백 수, 부정 비율을 조회한다. 카테고리는 대소문자 차이로 분리되지 않도록 대문자로 정규화한다.
+
+#### <Query Parameters>
+
+from
+
+* 피드백 시작일
+
+to
+
+* 피드백 종료일
+
+두 날짜는 선택값이며 원문 발생 시각을 기준으로 적용한다. 원문 발생 시각이 없으면 수집 시각을 사용하고, `to` 날짜의 마지막 시각까지 포함한다. 분석이 완료되지 않은 피드백은 카테고리와 부정 비율 집계에서 제외한다.
+
+이슈 수는 기간과 관계없이 현재 `NEW`, `TRIAGED`, `ASSIGNED`, `IN_PROGRESS` 상태인 이슈를 집계한다. 피드백이 없는 활성 이슈 카테고리와 활성 이슈가 없는 피드백 카테고리도 결과에 포함한다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "category": "PAYMENT",
+      "issueCount": 4,
+      "feedbackCount": 128,
+      "negativeFeedbackRate": 72.66
+    },
+    {
+      "category": "DELIVERY",
+      "issueCount": 2,
+      "feedbackCount": 64,
+      "negativeFeedbackRate": 43.75
+    }
+  ],
+  "message": null
+}
+```
+
+결과는 피드백 수, 이슈 수 내림차순과 카테고리 오름차순으로 정렬한다.
 
 #### <권한>
 
@@ -1590,14 +1629,44 @@ GET /api/v1/dashboard/top-issues
 
 limit
 
-* 조회 개수
+* 조회 개수. 기본값 10, 최대 50
 
 sortBy
 
 * 정렬 기준
 * priority_score
 * feedback_count
-* growth_rate
+
+기본 정렬은 `priority_score`다. 점수가 없는 이슈는 점수가 있는 이슈보다 뒤에 배치하고, 동률이면 피드백 수와 이슈 ID를 사용해 순서를 고정한다. `feedback_count` 정렬도 우선순위 점수와 이슈 ID를 보조 기준으로 사용한다.
+
+`RESOLVED`, `MONITORING`, `CLOSED` 이슈는 제외한다. 부정 비율은 연결된 피드백 중 분석 완료 건만 분모로 사용하며, 미해결 액션 수는 `TODO`, `IN_PROGRESS` 액션을 집계한다.
+
+`growth_rate` 정렬은 일별 snapshot 기반 추이 기능과 함께 추가한다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "issueId": 10,
+      "title": "쿠폰 적용 후 결제 실패",
+      "category": "PAYMENT",
+      "priority": "P1",
+      "priorityScore": 71.50,
+      "status": "IN_PROGRESS",
+      "feedbackCount": 128,
+      "negativeFeedbackRate": 82.03,
+      "unresolvedActionCount": 2,
+      "assigneeId": 3,
+      "assigneeName": "개발자",
+      "lastSeenAt": "2026-07-12T18:30:00"
+    }
+  ],
+  "message": null
+}
+```
 
 #### <권한>
 
