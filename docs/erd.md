@@ -32,7 +32,7 @@ erDiagram
     issues ||--o{ issue_feedbacks : groups
     issues ||--o{ actions : resolves_with
     issues ||--o{ issue_comments : discusses
-    issues ||--o{ issue_metrics_snapshot : measures
+    issues ||--o{ issue_metrics_snapshots : measures
     refresh_tokens o|--o| refresh_tokens : replaced_by
 
     organizations {
@@ -194,17 +194,20 @@ erDiagram
         datetime created_at
     }
 
-    issue_metrics_snapshot {
+    issue_metrics_snapshots {
         bigint id PK
         bigint issue_id FK
         date snapshot_date
-        int feedback_count
-        int negative_count
+        bigint feedback_count
+        bigint analyzed_feedback_count
+        bigint negative_feedback_count
         decimal average_sentiment_score
         decimal average_urgency_score
         decimal priority_score
-        int unresolved_action_count
+        bigint unresolved_action_count
         datetime created_at
+        datetime updated_at
+        bigint version
     }
 ```
 
@@ -219,11 +222,11 @@ erDiagram
 - `issue_feedbacks(issue_id, feedback_id)`: 복합 `UNIQUE`
 - `issues`: ASSIGNED 이후 상태에는 담당자가 필요하고, 최초·최근 발생 시각의 역전을 방지
 - `actions`: DONE 상태에만 `completed_at`을 저장
-- `issue_metrics_snapshot(issue_id, snapshot_date)`: 복합 `UNIQUE`
+- `issue_metrics_snapshots(issue_id, snapshot_date)`: 복합 `UNIQUE`
 - 모든 핵심 조회는 `organization_id`를 기준으로 격리
 
 ## 구현 단계
 
-1차 MVP는 `organizations`, `users`, `refresh_tokens`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`를 구현한다.
+핵심 구현 범위는 `organizations`, `users`, `refresh_tokens`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`, `analysis_jobs`, `analysis_job_items`, `issue_metrics_snapshots`다.
 
-2차에서 `feedback_embeddings`, `issue_comments`를 추가하고, 성능 개선 단계에서 `issue_metrics_snapshot`을 적용한다.
+`feedback_embeddings`, `issue_comments`는 후속 확장 범위다.

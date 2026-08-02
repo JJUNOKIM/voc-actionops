@@ -8,6 +8,7 @@ import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.repository.RefreshTokenRepository;
 import com.vocactionops.backend.dataset.repository.DatasetRepository;
 import com.vocactionops.backend.dataset.repository.DatasetValidationErrorRepository;
+import com.vocactionops.backend.dashboard.repository.IssueMetricsSnapshotRepository;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.issue.repository.IssueFeedbackRepository;
 import com.vocactionops.backend.issue.repository.IssueRepository;
@@ -24,6 +25,7 @@ public class DatabaseCleaner {
 	private final AnalysisJobRepository analysisJobRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
+	private final IssueMetricsSnapshotRepository snapshotRepository;
 	private final IssueRepository issueRepository;
 	private final AiCorrectionRepository correctionRepository;
 	private final FeedbackAnalysisRepository analysisRepository;
@@ -39,6 +41,7 @@ public class DatabaseCleaner {
 			AnalysisJobRepository analysisJobRepository,
 			RefreshTokenRepository refreshTokenRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
+			IssueMetricsSnapshotRepository snapshotRepository,
 			IssueRepository issueRepository,
 			AiCorrectionRepository correctionRepository,
 			FeedbackAnalysisRepository analysisRepository,
@@ -53,6 +56,7 @@ public class DatabaseCleaner {
 		this.analysisJobRepository = analysisJobRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
+		this.snapshotRepository = snapshotRepository;
 		this.issueRepository = issueRepository;
 		this.correctionRepository = correctionRepository;
 		this.analysisRepository = analysisRepository;
@@ -67,6 +71,7 @@ public class DatabaseCleaner {
 	public void clean() {
 		refreshTokenRepository.deleteAll();
 		actionRepository.deleteAll();
+		snapshotRepository.deleteAll();
 		issueFeedbackRepository.deleteAll();
 		issueRepository.deleteAll();
 		correctionRepository.deleteAll();

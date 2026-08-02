@@ -176,6 +176,50 @@ public class DashboardQueryRepository {
 		);
 	}
 
+	public List<IssueSnapshotMetrics> getIssueSnapshotMetrics(Long organizationId) {
+		String sql = """
+				SELECT issue.id AS issue_id,
+				       COUNT(DISTINCT link.id) AS feedback_count,
+				       COUNT(DISTINCT CASE
+				           WHEN analysis.status = 'SUCCESS' THEN link.id
+				       END) AS analyzed_feedback_count,
+				       COUNT(DISTINCT CASE
+				           WHEN analysis.status = 'SUCCESS' AND analysis.sentiment = 'NEGATIVE'
+				           THEN link.id
+				       END) AS negative_feedback_count,
+				       AVG(CASE
+				           WHEN analysis.status = 'SUCCESS' THEN analysis.sentiment_score
+				       END) AS average_sentiment_score,
+				       AVG(CASE
+				           WHEN analysis.status = 'SUCCESS' THEN analysis.urgency_score
+				       END) AS average_urgency_score,
+				       issue.priority_score,
+				       COUNT(DISTINCT CASE
+				           WHEN action_item.status IN ('TODO', 'IN_PROGRESS') THEN action_item.id
+				       END) AS unresolved_action_count
+				FROM issues issue
+				LEFT JOIN issue_feedbacks link ON link.issue_id = issue.id
+				LEFT JOIN feedback_analysis analysis ON analysis.feedback_id = link.feedback_id
+				LEFT JOIN actions action_item ON action_item.issue_id = issue.id
+				WHERE issue.organization_id = :organizationId
+				GROUP BY issue.id, issue.priority_score
+				ORDER BY issue.id
+				""";
+
+		return jdbcTemplate.query(sql, parameters(organizationId), (resultSet, rowNumber) ->
+				new IssueSnapshotMetrics(
+						resultSet.getLong("issue_id"),
+						resultSet.getLong("feedback_count"),
+						resultSet.getLong("analyzed_feedback_count"),
+						resultSet.getLong("negative_feedback_count"),
+						resultSet.getBigDecimal("average_sentiment_score"),
+						resultSet.getBigDecimal("average_urgency_score"),
+						resultSet.getBigDecimal("priority_score"),
+						resultSet.getLong("unresolved_action_count")
+				)
+		);
+	}
+
 	public List<TopIssueMetrics> getTopIssuesByPriorityScore(Long organizationId, int limit) {
 		return getTopIssues(
 				organizationId,
@@ -195,6 +239,23 @@ public class DashboardQueryRepository {
 				limit,
 				"""
 						feedback_count DESC,
+						CASE WHEN issue.priority_score IS NULL THEN 1 ELSE 0 END,
+						issue.priority_score DESC,
+						issue.id
+						"""
+		);
+	}
+
+	public List<TopIssueMetrics> getTopIssuesByGrowthRate(Long organizationId, int limit) {
+		return getTopIssues(
+				organizationId,
+				limit,
+				"""
+						CASE
+						    WHEN growth.previous_feedback_count IS NULL
+						      OR growth.previous_feedback_count = 0 THEN 1 ELSE 0
+						END,
+						feedback_growth_rate DESC,
 						CASE WHEN issue.priority_score IS NULL THEN 1 ELSE 0 END,
 						issue.priority_score DESC,
 						issue.id
@@ -227,17 +288,44 @@ public class DashboardQueryRepository {
 				       END) AS negative_feedback_count,
 				       COUNT(DISTINCT CASE
 				           WHEN action_item.status IN ('TODO', 'IN_PROGRESS') THEN action_item.id
-				       END) AS unresolved_action_count
+				       END) AS unresolved_action_count,
+				       CASE
+				           WHEN growth.previous_feedback_count IS NULL
+				             OR growth.previous_feedback_count = 0 THEN NULL
+				           ELSE (growth.latest_feedback_count - growth.previous_feedback_count)
+				                * 100.0 / growth.previous_feedback_count
+				       END AS feedback_growth_rate
 				FROM issues issue
 				LEFT JOIN users assignee ON assignee.id = issue.assignee_id
 				LEFT JOIN issue_feedbacks link ON link.issue_id = issue.id
 				LEFT JOIN feedback_analysis analysis ON analysis.feedback_id = link.feedback_id
 				LEFT JOIN actions action_item ON action_item.issue_id = issue.id
+				LEFT JOIN (
+				    SELECT ranked.issue_id,
+				           MAX(CASE WHEN ranked.snapshot_rank = 1
+				               THEN ranked.feedback_count END) AS latest_feedback_count,
+				           MAX(CASE WHEN ranked.snapshot_rank = 2
+				               THEN ranked.feedback_count END) AS previous_feedback_count
+				    FROM (
+				        SELECT snapshot.issue_id,
+				               snapshot.feedback_count,
+				               ROW_NUMBER() OVER (
+				                   PARTITION BY snapshot.issue_id
+				                   ORDER BY snapshot.snapshot_date DESC, snapshot.id DESC
+				               ) AS snapshot_rank
+				        FROM issue_metrics_snapshots snapshot
+				        JOIN issues snapshot_issue ON snapshot_issue.id = snapshot.issue_id
+				        WHERE snapshot_issue.organization_id = :organizationId
+				    ) ranked
+				    WHERE ranked.snapshot_rank <= 2
+				    GROUP BY ranked.issue_id
+				) growth ON growth.issue_id = issue.id
 				WHERE issue.organization_id = :organizationId
 				  AND issue.status NOT IN ('RESOLVED', 'MONITORING', 'CLOSED')
 				GROUP BY issue.id, issue.title, issue.category, issue.priority,
 				         issue.priority_score, issue.status, assignee.id, assignee.name,
-				         issue.last_seen_at
+				         issue.last_seen_at, growth.latest_feedback_count,
+				         growth.previous_feedback_count
 				ORDER BY %s
 				LIMIT :limit
 				""".formatted(orderBy);
@@ -259,6 +347,7 @@ public class DashboardQueryRepository {
 					resultSet.getLong("analyzed_feedback_count"),
 					resultSet.getLong("negative_feedback_count"),
 					resultSet.getLong("unresolved_action_count"),
+					resultSet.getBigDecimal("feedback_growth_rate"),
 					assigneeMissing ? null : assigneeId,
 					resultSet.getString("assignee_name"),
 					lastSeenAt == null ? null : lastSeenAt.toLocalDateTime()
@@ -330,6 +419,18 @@ public class DashboardQueryRepository {
 	public record CategoryIssueMetrics(String category, long issueCount) {
 	}
 
+	public record IssueSnapshotMetrics(
+			Long issueId,
+			long feedbackCount,
+			long analyzedFeedbackCount,
+			long negativeFeedbackCount,
+			BigDecimal averageSentimentScore,
+			BigDecimal averageUrgencyScore,
+			BigDecimal priorityScore,
+			long unresolvedActionCount
+	) {
+	}
+
 	public record TopIssueMetrics(
 			Long issueId,
 			String title,
@@ -341,6 +442,7 @@ public class DashboardQueryRepository {
 			long analyzedFeedbackCount,
 			long negativeFeedbackCount,
 			long unresolvedActionCount,
+			BigDecimal feedbackGrowthRate,
 			Long assigneeId,
 			String assigneeName,
 			LocalDateTime lastSeenAt
