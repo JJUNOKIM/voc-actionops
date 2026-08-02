@@ -83,6 +83,10 @@ public class DashboardInsightsService {
 					authenticatedUser.organizationId(),
 					limit
 			);
+			case GROWTH_RATE -> dashboardQueryRepository.getTopIssuesByGrowthRate(
+					authenticatedUser.organizationId(),
+					limit
+			);
 		};
 		return metrics.stream()
 				.map(DashboardInsightsService::toView)
@@ -98,6 +102,7 @@ public class DashboardInsightsService {
 				metrics.priorityScore(),
 				metrics.status(),
 				metrics.feedbackCount(),
+				DashboardMetricCalculator.normalize(metrics.feedbackGrowthRate()),
 				DashboardMetricCalculator.percentage(
 						metrics.negativeFeedbackCount(),
 						metrics.analyzedFeedbackCount()
@@ -138,7 +143,8 @@ public class DashboardInsightsService {
 
 	private enum TopIssueSort {
 		PRIORITY_SCORE("priority_score"),
-		FEEDBACK_COUNT("feedback_count");
+		FEEDBACK_COUNT("feedback_count"),
+		GROWTH_RATE("growth_rate");
 
 		private final String externalName;
 

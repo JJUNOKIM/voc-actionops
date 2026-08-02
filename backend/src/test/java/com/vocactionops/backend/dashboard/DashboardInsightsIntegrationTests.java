@@ -291,6 +291,7 @@ class DashboardInsightsIntegrationTests {
 				.andExpect(jsonPath("$.data[0].issueId").value(highPriorityIssue.getId()))
 				.andExpect(jsonPath("$.data[0].priorityScore").value(71.5))
 				.andExpect(jsonPath("$.data[0].feedbackCount").value(1))
+				.andExpect(jsonPath("$.data[0].feedbackGrowthRate").doesNotExist())
 				.andExpect(jsonPath("$.data[0].negativeFeedbackRate").value(100.0))
 				.andExpect(jsonPath("$.data[0].unresolvedActionCount").value(1))
 				.andExpect(jsonPath("$.data[0].assigneeId").value(pm.getId()))
@@ -325,12 +326,6 @@ class DashboardInsightsIntegrationTests {
 		mockMvc.perform(get("/api/v1/dashboard/category-breakdown")
 						.queryParam("from", "2026-07-13")
 						.queryParam("to", "2026-07-12")
-						.header("Authorization", bearer(viewer)))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REQUEST.code()));
-
-		mockMvc.perform(get("/api/v1/dashboard/top-issues")
-						.queryParam("sortBy", "growth_rate")
 						.header("Authorization", bearer(viewer)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REQUEST.code()));

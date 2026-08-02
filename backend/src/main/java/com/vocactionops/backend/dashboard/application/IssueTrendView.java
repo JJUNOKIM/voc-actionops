@@ -1,24 +1,21 @@
 package com.vocactionops.backend.dashboard.application;
 
 import com.vocactionops.backend.issue.domain.IssueStatus;
-import com.vocactionops.backend.issue.domain.Priority;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record TopIssueView(
+public record IssueTrendView(
 		Long issueId,
 		String title,
 		String category,
-		Priority priority,
-		BigDecimal priorityScore,
 		IssueStatus status,
-		long feedbackCount,
+		LocalDateTime resolvedAt,
+		LocalDate from,
+		LocalDate to,
 		BigDecimal feedbackGrowthRate,
-		BigDecimal negativeFeedbackRate,
-		long unresolvedActionCount,
-		Long assigneeId,
-		String assigneeName,
-		LocalDateTime lastSeenAt
+		List<IssueMetricPoint> points
 ) {
 }

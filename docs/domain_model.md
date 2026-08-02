@@ -309,12 +309,19 @@ Issue의 일별 지표를 저장하는 snapshot 테이블이다.
 * issue_id
 * snapshot_date
 * feedback_count
-* negative_count
+* analyzed_feedback_count
+* negative_feedback_count
 * average_sentiment_score
 * average_urgency_score
 * priority_score
 * unresolved_action_count
 * created_at
+* updated_at
+* version
+
+`issue_id`와 `snapshot_date` 조합은 유일하다. 같은 날짜의 수집을 다시 실행하면 기존 snapshot을 갱신한다. 부정 비율은 미분석 피드백의 영향을 받지 않도록 `analyzed_feedback_count`를 분모로 계산한다.
+
+snapshot은 매일 23:55 KST에 생성하며 ADMIN과 PM은 장애 복구나 당일 확인을 위해 수동으로 다시 생성할 수 있다. 과거 시점의 액션 상태는 현재 데이터만으로 정확히 복원할 수 없으므로 누락일을 임의 값으로 채우지 않는다.
 
 ## 1.14 RefreshToken
 
@@ -506,4 +513,4 @@ MVP에서는 다음 도메인을 우선 구현한다.
 
 FeedbackEmbedding, IssueComment는 2차 구현에서 추가한다.
 
-IssueMetricsSnapshot은 성능 개선 단계에서 추가한다.
+IssueMetricsSnapshot은 일별 이슈 추이와 최근 증가율 조회에 사용한다.

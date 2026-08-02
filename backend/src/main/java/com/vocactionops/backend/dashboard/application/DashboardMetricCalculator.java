@@ -22,4 +22,13 @@ final class DashboardMetricCalculator {
 	static BigDecimal normalize(BigDecimal value) {
 		return value == null ? null : value.setScale(METRIC_SCALE, RoundingMode.HALF_UP);
 	}
+
+	static BigDecimal growthRate(long latest, long previous) {
+		if (previous == 0) {
+			return null;
+		}
+		return BigDecimal.valueOf(latest - previous)
+				.multiply(BigDecimal.valueOf(100))
+				.divide(BigDecimal.valueOf(previous), METRIC_SCALE, RoundingMode.HALF_UP);
+	}
 }

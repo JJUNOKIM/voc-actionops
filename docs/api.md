@@ -1510,7 +1510,7 @@ size
 
 ## 9. 대시보드 API
 
-대시보드는 처음에는 MySQL 집계로 구현하고, 데이터가 많아지면 snapshot과 Redis 캐싱으로 개선
+요약과 카테고리 지표는 현재 데이터를 MySQL에서 집계하고, 이슈 추이는 일별 snapshot을 사용한다.
 
 ### 9.1 요약 지표 조회
 
@@ -1636,12 +1636,13 @@ sortBy
 * 정렬 기준
 * priority_score
 * feedback_count
+* growth_rate
 
 기본 정렬은 `priority_score`다. 점수가 없는 이슈는 점수가 있는 이슈보다 뒤에 배치하고, 동률이면 피드백 수와 이슈 ID를 사용해 순서를 고정한다. `feedback_count` 정렬도 우선순위 점수와 이슈 ID를 보조 기준으로 사용한다.
 
 `RESOLVED`, `MONITORING`, `CLOSED` 이슈는 제외한다. 부정 비율은 연결된 피드백 중 분석 완료 건만 분모로 사용하며, 미해결 액션 수는 `TODO`, `IN_PROGRESS` 액션을 집계한다.
 
-`growth_rate` 정렬은 일별 snapshot 기반 추이 기능과 함께 추가한다.
+`growth_rate`는 각 이슈의 최신 두 snapshot에 저장된 피드백 수를 비교한 백분율이다. 이전 snapshot이 없거나 이전 피드백 수가 0이면 값은 `null`이며, 증가율이 계산되는 이슈보다 뒤에 배치한다.
 
 #### <Response 예시>
 
@@ -1657,6 +1658,7 @@ sortBy
       "priorityScore": 71.50,
       "status": "IN_PROGRESS",
       "feedbackCount": 128,
+      "feedbackGrowthRate": 12.28,
       "negativeFeedbackRate": 82.03,
       "unresolvedActionCount": 2,
       "assigneeId": 3,
@@ -1697,12 +1699,87 @@ to
 
 * 종료일
 
+`from`, `to`는 포함 범위다. 둘 다 없으면 오늘까지 최근 30일을 조회하며 최대 366일까지 요청할 수 있다. 응답의 `feedbackGrowthRate`는 조회 결과 중 최신 두 snapshot을 기준으로 계산한다. 이전 피드백 수가 0이거나 snapshot이 한 건뿐이면 값은 `null`이다.
+
+부정 피드백 비율은 snapshot 시점의 분석 완료 수를 분모로 계산한다. 분석 완료 피드백이 없으면 `0.00`이다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "issueId": 10,
+    "title": "쿠폰 적용 후 결제 실패",
+    "category": "PAYMENT",
+    "status": "IN_PROGRESS",
+    "resolvedAt": null,
+    "from": "2026-07-01",
+    "to": "2026-07-30",
+    "feedbackGrowthRate": 12.28,
+    "points": [
+      {
+        "snapshotDate": "2026-07-29",
+        "feedbackCount": 114,
+        "analyzedFeedbackCount": 110,
+        "negativeFeedbackRate": 80.91,
+        "averageSentimentScore": -0.64210,
+        "averageUrgencyScore": 0.7812,
+        "priorityScore": 71.50,
+        "unresolvedActionCount": 2
+      },
+      {
+        "snapshotDate": "2026-07-30",
+        "feedbackCount": 128,
+        "analyzedFeedbackCount": 124,
+        "negativeFeedbackRate": 82.26,
+        "averageSentimentScore": -0.68123,
+        "averageUrgencyScore": 0.8004,
+        "priorityScore": 74.20,
+        "unresolvedActionCount": 2
+      }
+    ]
+  },
+  "message": null
+}
+```
+
 #### <권한>
 
 * ADMIN
 * PM
 * CS
 * VIEWER
+
+---
+
+### 9.5 당일 이슈 snapshot 갱신
+
+```http
+POST /api/v1/dashboard/snapshots/refresh
+```
+
+요청한 사용자의 조직에 속한 모든 이슈 지표를 당일 날짜로 저장한다. 같은 이슈와 날짜에 다시 실행하면 행을 추가하지 않고 최신 값으로 갱신한다.
+
+서버는 매일 23:55 KST에도 전체 조직을 자동 수집한다. 과거 액션 상태를 정확히 복원할 수 없으므로 누락된 과거 날짜를 현재 값으로 임의 생성하지 않는다.
+
+#### <Response 예시>
+
+```json
+{
+  "success": true,
+  "data": {
+    "snapshotDate": "2026-07-30",
+    "issueCount": 42
+  },
+  "message": null
+}
+```
+
+#### <권한>
+
+* ADMIN
+* PM
 
 ---
 
@@ -1820,6 +1897,7 @@ GET  /api/v1/issues/{issueId}/feedbacks
 GET /api/v1/dashboard/category-breakdown
 GET /api/v1/dashboard/top-issues
 GET /api/v1/dashboard/issue-trends
+POST /api/v1/dashboard/snapshots/refresh
 ```
 
 ---
