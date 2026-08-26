@@ -1,4 +1,9 @@
-import type { DatasetStatus, SourceType, SystemField } from './types';
+import type {
+  DatasetStatus,
+  DatasetValidationErrorCode,
+  SourceType,
+  SystemField,
+} from './types';
 
 export const sourceTypeOptions: Array<{ value: SourceType; label: string }> = [
   { value: 'SHOP_REVIEW', label: '쇼핑몰 리뷰' },
@@ -46,4 +51,20 @@ export function datasetStatusTone(status: DatasetStatus): string {
   if (status === 'ANALYZING' || status === 'VALIDATING') return 'progress';
   if (status === 'VALIDATED') return 'ready';
   return 'neutral';
+}
+
+export function systemFieldLabel(field: string): string {
+  return systemFieldOptions.find((option) => option.value === field)?.label ?? field;
+}
+
+const validationErrorLabels: Record<DatasetValidationErrorCode, string> = {
+  MISSING_REQUIRED_FIELD: '필수 값 누락',
+  EMPTY_CONTENT: '내용 없음',
+  INVALID_RATING_RANGE: '평점 범위 오류',
+  INVALID_DATE_FORMAT: '날짜 형식 오류',
+  DUPLICATED_EXTERNAL_ID: '외부 ID 중복',
+};
+
+export function validationErrorLabel(code: DatasetValidationErrorCode): string {
+  return validationErrorLabels[code];
 }

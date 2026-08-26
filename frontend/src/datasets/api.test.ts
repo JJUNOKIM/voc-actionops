@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { datasetsRequest, uploadDatasetRequest } from './api';
+import {
+  datasetDetailRequest,
+  datasetsRequest,
+  datasetValidationErrorsRequest,
+  uploadDatasetRequest,
+} from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
 
@@ -23,6 +28,19 @@ describe('dataset API', () => {
 
     expect(apiRequestMock).toHaveBeenCalledWith(
       '/api/v1/datasets?page=2&size=20&sourceType=APP_REVIEW&status=VALIDATED',
+    );
+  });
+
+  it('requests a dataset detail and its paged validation errors', async () => {
+    apiRequestMock.mockResolvedValue({ content: [] });
+
+    await datasetDetailRequest(17);
+    await datasetValidationErrorsRequest(17, 2, 20);
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, '/api/v1/datasets/17');
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/v1/datasets/17/validation-errors?page=2&size=20',
     );
   });
 

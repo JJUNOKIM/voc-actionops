@@ -23,6 +23,13 @@ export type SystemField =
   | 'language'
   | 'feedback_created_at';
 
+export type DatasetValidationErrorCode =
+  | 'MISSING_REQUIRED_FIELD'
+  | 'EMPTY_CONTENT'
+  | 'INVALID_RATING_RANGE'
+  | 'INVALID_DATE_FORMAT'
+  | 'DUPLICATED_EXTERNAL_ID';
+
 export interface PageResponse<T> {
   content: T[];
   page: number;
@@ -39,6 +46,23 @@ export interface DatasetSummary {
   totalCount: number;
   validCount: number;
   invalidCount: number;
+  createdAt: string;
+}
+
+export interface DatasetDetail extends DatasetSummary {
+  fileUrl: string | null;
+  columnMapping: Record<string, SystemField> | null;
+  createdBy: number;
+  updatedAt: string;
+}
+
+export interface DatasetValidationError {
+  id: number;
+  rowNumber: number;
+  fieldName: string;
+  errorCode: DatasetValidationErrorCode;
+  errorMessage: string;
+  rawRow: Record<string, string>;
   createdAt: string;
 }
 

@@ -9,10 +9,12 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
 import { datasetsRequest } from '../datasets/api';
 import { DatasetUploadDialog } from '../datasets/DatasetUploadDialog';
+import { formatDate, formatNumber } from '../datasets/format';
 import {
   datasetStatusLabel,
   datasetStatusOptions,
@@ -292,7 +294,7 @@ function DatasetTable({ datasets, refreshing }: { datasets: DatasetSummary[]; re
             <tr key={dataset.id}>
               <td data-label="데이터셋">
                 <div className="dataset-name-cell">
-                  <strong>{dataset.name}</strong>
+                  <Link to={`/datasets/${dataset.id}`}>{dataset.name}</Link>
                   <span>{sourceTypeLabel(dataset.sourceType)}</span>
                 </div>
               </td>
@@ -331,23 +333,4 @@ function DatasetTableLoading() {
       ))}
     </div>
   );
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat('ko-KR').format(value);
-}
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date);
 }

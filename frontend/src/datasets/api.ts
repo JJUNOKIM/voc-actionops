@@ -1,9 +1,11 @@
 import { apiRequest } from '../lib/api-client';
 import type {
+  DatasetDetail,
   DatasetQuery,
   DatasetSummary,
   DatasetUploadInput,
   DatasetUploadResult,
+  DatasetValidationError,
   PageResponse,
 } from './types';
 
@@ -19,6 +21,19 @@ export function datasetsRequest(query: DatasetQuery): Promise<PageResponse<Datas
     params.set('status', query.status);
   }
   return apiRequest(`/api/v1/datasets?${params.toString()}`);
+}
+
+export function datasetDetailRequest(datasetId: number): Promise<DatasetDetail> {
+  return apiRequest(`/api/v1/datasets/${datasetId}`);
+}
+
+export function datasetValidationErrorsRequest(
+  datasetId: number,
+  page: number,
+  size: number,
+): Promise<PageResponse<DatasetValidationError>> {
+  const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
+  return apiRequest(`/api/v1/datasets/${datasetId}/validation-errors?${params.toString()}`);
 }
 
 export function uploadDatasetRequest(input: DatasetUploadInput): Promise<DatasetUploadResult> {

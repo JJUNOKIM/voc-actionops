@@ -6,6 +6,7 @@ import { App } from './app/App';
 import { AuthProvider } from './auth/AuthContext';
 import './styles/index.css';
 import './styles/datasets.css';
+import './styles/dataset-detail.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
