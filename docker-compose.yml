@@ -20,19 +20,6 @@ services:
       retries: 10
       start_period: 20s
 
-  redis:
-    image: redis:7.4-alpine
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   ai-worker:
     build:
       context: ./ai-worker
@@ -55,6 +42,47 @@ services:
       retries: 10
       start_period: 10s
 
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-voc_actionops}
+      MYSQL_USER: ${MYSQL_USER:-local_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-local_password}
+      JWT_SECRET: ${JWT_SECRET:-voc-actionops-local-jwt-secret-key-2026}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-30m}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-14d}
+      AI_WORKER_BASE_URL: http://ai-worker:8000
+      AI_WORKER_API_KEY: ${AI_WORKER_API_KEY:-local-ai-worker-key}
+      AI_WORKER_MODEL_NAME: ${AI_WORKER_MODEL_NAME:-deterministic-v1}
+      AI_WORKER_CONNECT_TIMEOUT: ${AI_WORKER_CONNECT_TIMEOUT:-2s}
+      AI_WORKER_READ_TIMEOUT: ${AI_WORKER_READ_TIMEOUT:-30s}
+      AI_WORKER_MAX_ATTEMPTS: ${AI_WORKER_MAX_ATTEMPTS:-3}
+      DATASET_UPLOAD_DIRECTORY: /var/lib/voc-actionops/uploads
+      DEMO_DATA_ENABLED: ${DEMO_DATA_ENABLED:-true}
+      DEMO_ORGANIZATION_NAME: ${DEMO_ORGANIZATION_NAME:-VOC ActionOps Demo}
+      DEMO_USER_EMAIL: ${DEMO_USER_EMAIL:-admin@voc-actionops.local}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-demo-password}
+      DEMO_USER_NAME: ${DEMO_USER_NAME:-Demo Admin}
+    volumes:
+      - backend-uploads:/var/lib/voc-actionops/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ai-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
 volumes:
   mysql-data:
-  redis-data:
+  backend-uploads:

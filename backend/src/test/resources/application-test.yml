@@ -25,6 +25,8 @@ security:
     secret: voc-actionops-test-jwt-secret-key-2026
 
 app:
+  demo:
+    enabled: false
   dashboard:
     snapshot-cron: "-"
   dataset-upload:

@@ -3,7 +3,7 @@
 고객 피드백 원문, AI 분석 결과, 반복 이슈, 실제 처리 액션을 분리하고 조직 단위 데이터 격리를 적용한 MySQL 기준 설계다.
 
 - [ERDCloud에서 보기](https://www.erdcloud.com/d/xxDZWHiM8pZhwuqZJ)
-- 아래 Mermaid ERD는 공개 저장소 안에서도 전체 구조를 확인할 수 있도록 같은 테이블과 관계를 표현한다.
+- 아래 Mermaid ERD는 현재 마이그레이션으로 생성되는 테이블과 관계를 표현한다.
 
 ## 전체 관계
 
@@ -13,25 +13,26 @@ erDiagram
     organizations ||--o{ datasets : owns
     organizations ||--o{ feedbacks : isolates
     organizations ||--o{ issues : owns
+    organizations ||--o{ analysis_jobs : runs
 
     users ||--o{ datasets : creates
     users ||--o{ refresh_tokens : owns
     users o|--o{ issues : assigned_to
     users o|--o{ actions : assigned_to
-    users ||--o{ issue_comments : writes
     users ||--o{ ai_corrections : corrects
 
     datasets ||--o{ dataset_validation_errors : records
     datasets ||--o{ feedbacks : contains
+    datasets ||--o{ analysis_jobs : analyzed_by
 
     feedbacks ||--o| feedback_analysis : analyzed_as
-    feedbacks ||--o| feedback_embeddings : embedded_as
+    feedbacks ||--o{ analysis_job_items : processed_as
     feedbacks ||--o{ issue_feedbacks : linked_by
     feedbacks ||--o{ ai_corrections : corrected_by
 
+    analysis_jobs ||--o{ analysis_job_items : contains
     issues ||--o{ issue_feedbacks : groups
     issues ||--o{ actions : resolves_with
-    issues ||--o{ issue_comments : discusses
     issues ||--o{ issue_metrics_snapshots : measures
     refresh_tokens o|--o| refresh_tokens : replaced_by
 
@@ -123,13 +124,31 @@ erDiagram
         bigint version
     }
 
-    feedback_embeddings {
-        bigint id PK
-        bigint feedback_id FK,UK
-        varchar embedding_model
-        json embedding_json
-        varchar content_hash
+    analysis_jobs {
+        varchar id PK
+        bigint organization_id FK
+        bigint dataset_id FK
+        varchar status
+        int total_count
+        int processed_count
+        int success_count
+        int failed_count
+        varchar failure_reason
+        datetime started_at
+        datetime completed_at
         datetime created_at
+        datetime updated_at
+    }
+
+    analysis_job_items {
+        bigint id PK
+        varchar job_id FK
+        bigint feedback_id FK
+        varchar status
+        int attempt_count
+        varchar last_error
+        datetime created_at
+        datetime updated_at
     }
 
     issues {
@@ -174,15 +193,6 @@ erDiagram
         bigint version
     }
 
-    issue_comments {
-        bigint id PK
-        bigint issue_id FK
-        bigint user_id FK
-        varchar content
-        datetime created_at
-        datetime updated_at
-    }
-
     ai_corrections {
         bigint id PK
         bigint feedback_id FK
@@ -218,15 +228,9 @@ erDiagram
 - `refresh_tokens.replaced_by_token_id`: rotation으로 교체된 다음 토큰을 self-reference
 - `feedback_analysis.feedback_id`: `UNIQUE`로 피드백별 최신 분석 결과 1건 보장
 - `feedback_analysis`: 점수 범위와 PENDING/SUCCESS/FAILED 상태별 필수 데이터 조합을 `CHECK`로 검증
-- `feedback_embeddings.feedback_id`: `UNIQUE`로 피드백별 임베딩 1건 보장
+- `analysis_job_items(job_id, feedback_id)`: 복합 `UNIQUE`, 작업별 중복 분석 방지
 - `issue_feedbacks(issue_id, feedback_id)`: 복합 `UNIQUE`
 - `issues`: ASSIGNED 이후 상태에는 담당자가 필요하고, 최초·최근 발생 시각의 역전을 방지
 - `actions`: DONE 상태에만 `completed_at`을 저장
 - `issue_metrics_snapshots(issue_id, snapshot_date)`: 복합 `UNIQUE`
 - 모든 핵심 조회는 `organization_id`를 기준으로 격리
-
-## 구현 단계
-
-핵심 구현 범위는 `organizations`, `users`, `refresh_tokens`, `datasets`, `dataset_validation_errors`, `feedbacks`, `feedback_analysis`, `issues`, `issue_feedbacks`, `actions`, `ai_corrections`, `analysis_jobs`, `analysis_job_items`, `issue_metrics_snapshots`다.
-
-`feedback_embeddings`, `issue_comments`는 후속 확장 범위다.

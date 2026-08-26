@@ -1,10 +1,8 @@
-# VOC ActionOps API 명세 초안
+# VOC ActionOps API 명세
 
-## 1. 작성 시작
+## 1. 개요
 
-API 명세서 초안
-
-MVP에서 필요한 흐름부터 잡고 구현 과정에서 Swagger와 함께 계속 보완하는 방식으로 진행할 예정이다.
+현재 백엔드가 제공하는 HTTP API의 요청, 응답, 권한 규칙을 정리한다. 실행 환경의 OpenAPI 문서와 함께 변경 사항을 관리한다.
 
 API 설계 기준은 다음과 같다.
 
@@ -1382,45 +1380,6 @@ size
 
 ---
 
-### 7.8 이슈 코멘트 작성
-
-```http
-POST /api/v1/issues/{issueId}/comments
-```
-
-#### <Request>
-
-```json
-{
-  "content": "결제 API 로그 확인 결과 쿠폰 검증 단계에서 timeout이 발생했습니다."
-}
-```
-
-#### <권한>
-
-* ADMIN
-* PM
-* CS
-* DEVELOPER
-
----
-
-### 7.9 이슈 코멘트 조회
-
-```http
-GET /api/v1/issues/{issueId}/comments
-```
-
-#### <권한>
-
-* ADMIN
-* PM
-* CS
-* DEVELOPER
-* VIEWER
-
----
-
 ## 8. 액션 API
 
 액션은 이슈를 해결하기 위한 작업 단위
@@ -1799,7 +1758,6 @@ ADMIN
 * 이슈 상태 변경 가능
 * 액션 생성 가능
 * 액션 상태 변경 가능
-* 코멘트 작성 가능
 * 대시보드 조회 가능
 
 PM
@@ -1815,7 +1773,6 @@ PM
 * 이슈 상태 변경 가능
 * 액션 생성 가능
 * 액션 상태 변경 가능
-* 코멘트 작성 가능
 * 대시보드 조회 가능
 
 CS
@@ -1824,7 +1781,6 @@ CS
 * 피드백 조회 가능
 * AI 분석 결과 수정 가능
 * 이슈 조회 가능
-* 코멘트 작성 가능
 * 대시보드 조회 가능
 
 DEVELOPER
@@ -1833,7 +1789,6 @@ DEVELOPER
 * 이슈 조회 가능
 * 담당 이슈 상태 변경 가능
 * 담당 액션 상태 변경 가능
-* 코멘트 작성 가능
 
 VIEWER
 
@@ -1844,76 +1799,10 @@ VIEWER
 
 ---
 
-## 11. API 구현 순서
+## 11. 운영 및 확장 기준
 
-### 11.1 1차 구현
-
-```http
-POST /api/v1/auth/login
-GET  /api/v1/users/me
-
-POST /api/v1/datasets
-GET  /api/v1/datasets
-GET  /api/v1/datasets/{datasetId}
-
-GET  /api/v1/feedbacks
-GET  /api/v1/feedbacks/{feedbackId}
-
-GET   /api/v1/issues
-GET   /api/v1/issues/{issueId}
-PATCH /api/v1/issues/{issueId}/status
-PATCH /api/v1/issues/{issueId}/assignee
-
-POST  /api/v1/issues/{issueId}/actions
-PATCH /api/v1/actions/{actionId}/status
-```
-
-### 11.2 2차 구현
-
-```http
-POST /api/v1/datasets/{datasetId}/analyze
-GET  /api/v1/datasets/{datasetId}/analysis-status
-
-PATCH /api/v1/feedbacks/{feedbackId}/analysis
-GET   /api/v1/feedbacks/{feedbackId}/corrections
-
-POST /api/v1/issues/{issueId}/comments
-GET  /api/v1/issues/{issueId}/comments
-
-GET /api/v1/dashboard/summary
-```
-
-### 11.3 3차 구현
-
-```http
-GET  /api/v1/datasets/{datasetId}/validation-errors
-POST /api/v1/feedbacks/{feedbackId}/issue-links
-GET  /api/v1/feedbacks/{feedbackId}/issue-candidates
-POST /api/v1/feedbacks/{feedbackId}/issue-candidates/{issueId}/confirm
-GET  /api/v1/feedbacks/{feedbackId}/issue-draft
-POST /api/v1/feedbacks/{feedbackId}/issue-draft/confirm
-GET  /api/v1/issues/{issueId}/feedbacks
-
-GET /api/v1/dashboard/category-breakdown
-GET /api/v1/dashboard/top-issues
-GET /api/v1/dashboard/issue-trends
-POST /api/v1/dashboard/snapshots/refresh
-```
-
----
-
-## 12. 아직 확정하지 않은 부분
-
-구현하면서 아래 내용은 조정할 수 있다.
-
-refresh token 저장 위치
-
-대용량 CSV 비동기 처리 전환 기준
-
-AI 분석 실패 건 재시도 방식
-
-dashboard 집계 시점
-
-OpenSearch 도입 시점
-
-Redis 캐싱 범위
+* CSV 검증은 요청 시 최대 10,000행까지 처리하고, AI 분석은 영속화된 작업과 항목 단위로 비동기 실행한다.
+* 실패한 분석 항목은 설정된 횟수까지 재시도하며, 서버 재시작 시 PENDING 또는 RUNNING 작업을 복구한다.
+* refresh token은 원문 대신 SHA-256 해시를 저장하고 rotation과 재사용 탐지를 적용한다.
+* 대시보드 요약은 현재 데이터를 집계하고, 이슈 추이는 매일 23:55 KST에 저장한 snapshot을 사용한다.
+* 캐시나 검색 인프라는 현재 트래픽과 조회 성능을 측정한 뒤 도입한다. 현재 실행 환경은 MySQL만을 영속 저장소로 사용한다.
