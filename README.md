@@ -35,6 +35,13 @@ flowchart LR
 - Spring Web MVC, Spring Security, Spring Data JPA, Validation
 - Flyway, Gradle 9
 
+### Frontend
+
+- React 19, TypeScript
+- Vite, React Router
+- Vitest, Testing Library
+- Nginx
+
 ### AI Worker
 
 - Python 3.13
@@ -61,6 +68,7 @@ flowchart LR
 .
 |-- backend/                 Spring Boot API 서버
 |-- ai-worker/               FastAPI 피드백 분석 Worker
+|-- frontend/                React 운영 화면
 |-- samples/                 로컬 확인용 VOC CSV
 |-- docs/                    요구사항, 도메인, ERD, API 문서
 |-- docker-compose.yml       전체 로컬 실행 환경
@@ -86,6 +94,7 @@ MySQL이 준비되면 Flyway가 스키마를 적용하고, 백엔드는 데모 �
 
 실행 후 확인할 수 있는 주소:
 
+- Frontend: `http://localhost:3000`
 - Backend Health Check: `http://localhost:8080/actuator/health`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
@@ -123,6 +132,12 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[test]"
 AI_WORKER_API_KEY=local-ai-worker-key pytest
+
+cd ../frontend
+pnpm install
+pnpm lint
+pnpm test
+pnpm build
 ```
 
 AI Worker는 기본적으로 재현 가능한 로컬 분석 provider를 사용합니다. 실제 모델을 사용할 때는 `AI_PROVIDER=openai`와 `OPENAI_API_KEY`를 설정합니다.

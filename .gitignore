@@ -46,7 +46,9 @@ frontend/dist/
 frontend/build/
 frontend/.turbo/
 frontend/.vercel/
-frontend/.pnpm-store/
+.pnpm-store/
+frontend/*.tsbuildinfo
+frontend/pnpm-workspace.yaml
 
 # Python / FastAPI
 ai-worker/__pycache__/
