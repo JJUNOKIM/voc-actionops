@@ -21,10 +21,10 @@ flowchart LR
 
 - 원문 `Feedback`과 운영 단위 `Issue`를 분리한 도메인 설계
 - AI 결과의 신뢰도, 원문 근거, 사용자 수정 이력을 남기는 Human-in-the-loop 구조
-- 빈도, 부정도, 긴급도, 증가율, 고객 영향도를 반영하는 우선순위 모델
+- 피드백 빈도, 부정 비율, 평균 긴급도를 반영하는 설명 가능한 우선순위 모델
 - 조직 단위 데이터 격리와 역할 기반 권한 제어
-- 대량 CSV 처리와 AI 분석을 분리한 비동기 확장 구조
-- 이슈 해결 전후 지표를 비교할 수 있는 스냅샷 설계
+- 영속화된 분석 작업, 항목별 재시도, 재시작 복구를 포함한 비동기 AI 분석
+- 이슈 해결 전후 변화와 최근 증가율을 확인하는 일별 지표 스냅샷
 
 ## 기술 구성
 
@@ -33,8 +33,7 @@ flowchart LR
 - Java 17
 - Spring Boot 4.1
 - Spring Web MVC, Spring Security, Spring Data JPA, Validation
-- Flyway
-- Gradle 9
+- Flyway, Gradle 9
 
 ### AI Worker
 
@@ -46,7 +45,6 @@ flowchart LR
 ### Data & Infrastructure
 
 - MySQL 8.4
-- Redis 7.4
 - Docker Compose
 - GitHub Actions
 
@@ -63,39 +61,62 @@ flowchart LR
 .
 |-- backend/                 Spring Boot API 서버
 |-- ai-worker/               FastAPI 피드백 분석 Worker
+|-- samples/                 로컬 확인용 VOC CSV
 |-- docs/                    요구사항, 도메인, ERD, API 문서
-|-- docker-compose.yml       MySQL, Redis, AI Worker 로컬 환경
+|-- docker-compose.yml       전체 로컬 실행 환경
 |-- .env.example             로컬 환경 변수 예시
 `-- .github/workflows/       백엔드 및 AI Worker CI
 ```
 
 ## 로컬 실행
 
-사전 준비: Java 17 이상, Docker Desktop
+사전 준비: Docker Desktop
 
 ```bash
 cp .env.example .env
-docker compose up -d
-cd backend
-./gradlew bootRun
+docker compose up --build -d
 ```
 
-애플리케이션 시작 시 Flyway가 데이터베이스 마이그레이션을 적용하고, JPA는 엔티티와 스키마가 일치하는지 검증합니다.
+MySQL이 준비되면 Flyway가 스키마를 적용하고, 백엔드는 데모 조직과 ADMIN 사용자를 한 번만 생성합니다. 로컬 데모 초기화는 `DEMO_DATA_ENABLED`로 끌 수 있습니다.
+
+데모 계정:
+
+- 이메일: `admin@voc-actionops.local`
+- 비밀번호: `demo-password`
 
 실행 후 확인할 수 있는 주소:
 
-- Health Check: `http://localhost:8080/actuator/health`
+- Backend Health Check: `http://localhost:8080/actuator/health`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 - AI Worker Health Check: `http://localhost:8000/health`
 - AI Worker API 문서: `http://localhost:8000/docs`
 
-테스트와 빌드:
+Swagger에서 로그인한 뒤 access token을 Authorize에 입력하면 `samples/demo-feedbacks.csv`로 업로드와 분석 흐름을 확인할 수 있습니다. CSV 컬럼은 API 시스템 필드명과 같으므로 `columnMapping`에는 각 헤더를 같은 이름으로 매핑하면 됩니다.
+
+```json
+{
+  "external_id": "external_id",
+  "content": "content",
+  "customer_segment": "customer_segment",
+  "product_name": "product_name",
+  "rating": "rating",
+  "language": "language",
+  "feedback_created_at": "feedback_created_at"
+}
+```
+
+로컬 환경 종료:
+
+```bash
+docker compose down
+```
+
+## 테스트
 
 ```bash
 cd backend
 ./gradlew clean test
-./gradlew clean build
 
 cd ../ai-worker
 python -m venv .venv

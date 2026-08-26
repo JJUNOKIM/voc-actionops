@@ -46,6 +46,12 @@ security:
     refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:14d}
 
 app:
+  demo:
+    enabled: ${DEMO_DATA_ENABLED:false}
+    organization-name: ${DEMO_ORGANIZATION_NAME:VOC ActionOps Demo}
+    user-email: ${DEMO_USER_EMAIL:admin@voc-actionops.local}
+    user-password: ${DEMO_USER_PASSWORD:demo-password}
+    user-name: ${DEMO_USER_NAME:Demo Admin}
   dataset-upload:
     storage-directory: ${DATASET_UPLOAD_DIRECTORY:./data/uploads}
     max-file-size-bytes: ${DATASET_UPLOAD_MAX_FILE_SIZE_BYTES:5242880}

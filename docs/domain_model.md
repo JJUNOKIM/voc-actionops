@@ -152,22 +152,7 @@ Feedback에 대한 AI 분석 결과다.
 
 새 분석은 PENDING으로 시작하며 SUCCESS 또는 FAILED로 종료된다. 실패한 분석만 다시 PENDING으로 전환해 재시도할 수 있다. `version`은 동시에 들어온 완료·실패·수정 요청이 서로의 결과를 덮어쓰지 않도록 사용한다.
 
-## 1.7 FeedbackEmbedding
-
-유사 피드백을 찾기 위한 임베딩 정보다.
-
-주요 속성:
-
-* id
-* feedback_id
-* embedding_model
-* embedding_json
-* content_hash
-* created_at
-
-하나의 Feedback은 최대 하나의 최신 FeedbackEmbedding을 가진다. MVP에서는 MySQL JSON으로 저장하고 추후 OpenSearch 또는 벡터 데이터베이스로 교체할 수 있게 둔다.
-
-## 1.8 Issue
+## 1.7 Issue
 
 여러 Feedback이 모여 만들어진 반복 문제 단위다.
 
@@ -212,7 +197,7 @@ Feedback에 대한 AI 분석 결과다.
 
 `resolved_at`은 Issue가 RESOLVED 상태가 된 시각이다. 이후 MONITORING과 CLOSED 상태에서도 유지하며, MONITORING 중 문제가 재발해 IN_PROGRESS로 돌아가면 비운다. 다시 해결되면 새로운 해결 시각을 기록한다.
 
-## 1.9 IssueFeedback
+## 1.8 IssueFeedback
 
 Issue와 Feedback의 연결 테이블이다.
 
@@ -230,7 +215,7 @@ Issue와 Feedback의 연결 테이블이다.
 
 수동 연결은 `linked_by`를 MANUAL로 저장하며 유사도 점수는 비워 둔다. 추천 후보를 사용자가 확정한 연결은 `linked_by`를 AI로 저장하고 확정 시점의 유사도 점수를 함께 남긴다. 신규 이슈 초안을 확정할 때 최초 피드백은 해당 이슈를 만든 기준 데이터이므로 `linked_by`를 AI, `similarity_score`를 1.0000, `is_representative`를 true로 저장한다. 피드백이 연결될 때 이슈의 `first_seen_at`과 `last_seen_at`을 원문 발생 시각 기준으로 갱신한다.
 
-## 1.10 Action
+## 1.9 Action
 
 Issue를 해결하기 위한 작업 항목이다.
 
@@ -259,20 +244,7 @@ Issue를 해결하기 위한 작업 항목이다.
 
 액션은 TODO에서 시작한다. TODO는 IN_PROGRESS 또는 CANCELED로, IN_PROGRESS는 DONE 또는 CANCELED로 변경할 수 있다. DONE 전환 시 `completed_at`을 기록한다.
 
-## 1.11 IssueComment
-
-이슈 처리 과정에서 사용자가 남기는 협업 기록이다.
-
-주요 속성:
-
-* id
-* issue_id
-* user_id
-* content
-* created_at
-* updated_at
-
-## 1.12 AiCorrection
+## 1.10 AiCorrection
 
 AI 분석 결과를 사용자가 수정한 기록이다.
 
@@ -297,7 +269,37 @@ AI 결과를 사람이 검토하고 수정할 수 있어야 하므로, 수정 �
 
 `ai_value`에는 최초 AI 값이 아니라 각 수정 시점의 수정 직전 값을 저장한다. 이슈 연결 변경은 Issue 도메인의 연결 이력으로 별도 관리한다.
 
-## 1.13 IssueMetricsSnapshot
+## 1.11 AnalysisJob
+
+Dataset의 AI 분석 실행 상태를 저장하는 작업 단위다. 각 Feedback의 처리 상태는 AnalysisJobItem으로 분리한다.
+
+주요 속성:
+
+* id
+* organization_id
+* dataset_id
+* status
+* total_count
+* processed_count
+* success_count
+* failed_count
+* failure_reason
+* started_at
+* completed_at
+* created_at
+* updated_at
+
+작업 상태:
+
+* PENDING
+* RUNNING
+* COMPLETED
+* COMPLETED_WITH_ERRORS
+* FAILED
+
+AnalysisJobItem은 PENDING, RUNNING, SUCCESS, FAILED 상태와 시도 횟수, 마지막 오류를 저장한다. 서버가 재시작되면 완료되지 않은 작업을 찾아 RUNNING 항목을 PENDING으로 되돌린 뒤 이어서 처리한다.
+
+## 1.12 IssueMetricsSnapshot
 
 Issue의 일별 지표를 저장하는 snapshot 테이블이다.
 
@@ -323,7 +325,7 @@ Issue의 일별 지표를 저장하는 snapshot 테이블이다.
 
 snapshot은 매일 23:55 KST에 생성하며 ADMIN과 PM은 장애 복구나 당일 확인을 위해 수동으로 다시 생성할 수 있다. 과거 시점의 액션 상태는 현재 데이터만으로 정확히 복원할 수 없으므로 누락일을 임의 값으로 채우지 않는다.
 
-## 1.14 RefreshToken
+## 1.13 RefreshToken
 
 access token 재발급과 로그아웃을 위한 서버 측 세션 정보다.
 
@@ -361,13 +363,17 @@ Dataset 1 : N DatasetValidationError
 
 Feedback 1 : 1 FeedbackAnalysis
 
-Feedback 1 : 1 FeedbackEmbedding
+Organization 1 : N AnalysisJob
+
+Dataset 1 : N AnalysisJob
+
+AnalysisJob 1 : N AnalysisJobItem
+
+Feedback 1 : N AnalysisJobItem
 
 Issue N : M Feedback
 
 Issue 1 : N Action
-
-Issue 1 : N IssueComment
 
 Feedback 1 : N AiCorrection
 
@@ -447,7 +453,7 @@ Issue에 연결된 Feedback 중 하나 이상이 분석 완료되면 다음 계�
 
 피드백 연결, 피드백 분석 완료, 감성 또는 긴급도 보정 시 연결된 이슈의 점수를 같은 트랜잭션에서 다시 계산한다.
 
-최근 증가율과 고객 영향도는 시계열 snapshot과 고객 영향 기준이 추가된 이후 계산식에 반영한다.
+최근 증가율은 일별 snapshot으로 계산해 대시보드 판단 근거로 제공한다. 고객 영향도는 고객 식별과 영향 범위 기준이 정해진 뒤 우선순위 계산 요소로 검토한다.
 
 ## 3.8 처리 후 모니터링
 
@@ -506,11 +512,12 @@ MVP에서는 다음 도메인을 우선 구현한다.
 * DatasetValidationError
 * Feedback
 * FeedbackAnalysis
+* AnalysisJob
+* AnalysisJobItem
 * Issue
 * IssueFeedback
 * Action
 * AiCorrection
+* IssueMetricsSnapshot
 
-FeedbackEmbedding, IssueComment는 2차 구현에서 추가한다.
-
-IssueMetricsSnapshot은 일별 이슈 추이와 최근 증가율 조회에 사용한다.
+벡터 검색과 이슈 댓글은 현재 MVP 범위에 포함하지 않는다. 유사도 추천은 카테고리, 문자 bigram, 단어 코사인 유사도로 계산하며 IssueMetricsSnapshot은 일별 이슈 추이와 최근 증가율 조회에 사용한다.

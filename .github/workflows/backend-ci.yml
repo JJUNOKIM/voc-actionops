@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - "backend/**"
+      - "docker-compose.yml"
+      - ".env.example"
       - ".github/workflows/backend-ci.yml"
   push:
     branches:
       - main
     paths:
       - "backend/**"
+      - "docker-compose.yml"
+      - ".env.example"
       - ".github/workflows/backend-ci.yml"
 
 permissions:
@@ -46,3 +50,10 @@ jobs:
 
       - name: Run tests and build
         run: ./gradlew clean build --no-daemon
+
+      - name: Build backend image
+        run: docker build --tag voc-actionops-backend:test .
+
+      - name: Validate Docker Compose
+        working-directory: ${{ github.workspace }}
+        run: docker compose config --quiet

@@ -71,7 +71,6 @@ junit.xml
 # Docker / Local Data
 docker-data/
 mysql-data/
-redis-data/
 opensearch-data/
 backend/data/
 
