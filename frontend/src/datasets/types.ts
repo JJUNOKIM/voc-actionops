@@ -1,0 +1,67 @@
+export type SourceType =
+  | 'SHOP_REVIEW'
+  | 'APP_REVIEW'
+  | 'CS_TICKET'
+  | 'SURVEY'
+  | 'INTERNAL_TEST'
+  | 'ETC';
+
+export type DatasetStatus =
+  | 'UPLOADED'
+  | 'VALIDATING'
+  | 'VALIDATED'
+  | 'ANALYZING'
+  | 'ANALYZED'
+  | 'FAILED';
+
+export type SystemField =
+  | 'external_id'
+  | 'content'
+  | 'customer_segment'
+  | 'product_name'
+  | 'rating'
+  | 'language'
+  | 'feedback_created_at';
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface DatasetSummary {
+  id: number;
+  name: string;
+  sourceType: SourceType;
+  status: DatasetStatus;
+  totalCount: number;
+  validCount: number;
+  invalidCount: number;
+  createdAt: string;
+}
+
+export interface DatasetQuery {
+  sourceType?: SourceType;
+  status?: DatasetStatus;
+  page: number;
+  size: number;
+}
+
+export interface DatasetUploadInput {
+  name: string;
+  sourceType: SourceType;
+  file: File;
+  columnMapping: Record<string, SystemField>;
+}
+
+export interface DatasetUploadResult {
+  datasetId: number;
+  status: DatasetStatus;
+  totalCount: number;
+  validCount: number;
+  invalidCount: number;
+}
+
+export type ColumnMappingDraft = Record<string, SystemField | ''>;
