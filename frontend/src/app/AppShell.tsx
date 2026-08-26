@@ -1,5 +1,6 @@
 import {
   Activity,
+  Database,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -140,6 +141,10 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         <NavLink className="nav-item" to="/" end onClick={onNavigate}>
           <LayoutDashboard size={19} aria-hidden="true" />
           <span>개요</span>
+        </NavLink>
+        <NavLink className="nav-item" to="/datasets" onClick={onNavigate}>
+          <Database size={19} aria-hidden="true" />
+          <span>데이터셋</span>
         </NavLink>
       </nav>
 

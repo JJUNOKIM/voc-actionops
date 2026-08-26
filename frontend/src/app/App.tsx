@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppShell } from './AppShell';
+import { DatasetsPage } from '../pages/DatasetsPage';
 import { OverviewPage } from '../pages/OverviewPage';
 import { LoginPage } from '../auth/LoginPage';
 import { useAuth } from '../auth/useAuth';
@@ -12,6 +13,7 @@ export function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route index element={<OverviewPage />} />
+          <Route path="datasets" element={<DatasetsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

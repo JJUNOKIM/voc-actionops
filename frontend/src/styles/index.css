@@ -402,6 +402,10 @@ input:disabled {
   background: #28564d;
 }
 
+.nav-item + .nav-item {
+  margin-top: 4px;
+}
+
 .sidebar-system-status {
   display: flex;
   align-items: center;

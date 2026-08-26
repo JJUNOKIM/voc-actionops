@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './app/App';
 import { AuthProvider } from './auth/AuthContext';
 import './styles/index.css';
+import './styles/datasets.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
