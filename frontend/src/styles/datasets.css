@@ -211,12 +211,26 @@
   gap: 6px;
 }
 
-.dataset-name-cell strong {
+.dataset-name-cell a {
   overflow: hidden;
   color: var(--ink);
   font-size: 13px;
+  font-weight: 700;
   text-overflow: ellipsis;
+  text-decoration: none;
   white-space: nowrap;
+}
+
+.dataset-name-cell a:hover {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dataset-name-cell a:focus-visible {
+  border-radius: 2px;
+  outline: 3px solid rgb(23 131 110 / 18%);
+  outline-offset: 3px;
 }
 
 .dataset-name-cell span,
@@ -745,7 +759,7 @@
     display: inline;
   }
 
-  .dataset-name-cell strong {
+  .dataset-name-cell a {
     white-space: normal;
   }
 

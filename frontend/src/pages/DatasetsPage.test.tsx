@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatasetsPage } from './DatasetsPage';
@@ -51,9 +52,12 @@ describe('DatasetsPage', () => {
 
   it('renders the dataset list and sends filters and pagination to the API', async () => {
     const user = userEvent.setup();
-    render(<DatasetsPage />);
+    renderDatasetsPage();
 
-    expect(await screen.findByText('2026년 8월 앱 리뷰')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: '2026년 8월 앱 리뷰' })).toHaveAttribute(
+      'href',
+      '/datasets/1',
+    );
     expect(screen.getAllByText('분석 대기')).toHaveLength(2);
     expect(screen.getByText('117')).toBeInTheDocument();
     expect(pageMocks.datasetsRequest).toHaveBeenLastCalledWith({
@@ -85,13 +89,25 @@ describe('DatasetsPage', () => {
   });
 
   it('only exposes the upload command to allowed roles', async () => {
-    const { rerender } = render(<DatasetsPage />);
+    const { rerender } = renderDatasetsPage();
 
     expect(await screen.findByRole('button', { name: '데이터셋 추가' })).toBeInTheDocument();
 
     pageMocks.useAuth.mockReturnValue({ user: { ...admin, role: 'VIEWER' } });
-    rerender(<DatasetsPage />);
+    rerender(
+      <MemoryRouter>
+        <DatasetsPage />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByRole('button', { name: '데이터셋 추가' })).not.toBeInTheDocument();
   });
 });
+
+function renderDatasetsPage() {
+  return render(
+    <MemoryRouter>
+      <DatasetsPage />
+    </MemoryRouter>,
+  );
+}
