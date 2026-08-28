@@ -5,6 +5,7 @@ import com.vocactionops.backend.feedback.domain.Feedback;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 			  AND (:datasetId IS NULL OR feedback.dataset.id = :datasetId)
 			  AND (:sourceType IS NULL OR feedback.sourceType = :sourceType)
 			""")
+	@EntityGraph(attributePaths = "dataset")
 	Page<Feedback> findPageByOrganization(
 			@Param("organizationId") Long organizationId,
 			@Param("datasetId") Long datasetId,

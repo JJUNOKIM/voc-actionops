@@ -1,5 +1,8 @@
 package com.vocactionops.backend.dataset;
 
+import com.vocactionops.backend.analysis.application.FeedbackAnalysisService;
+import com.vocactionops.backend.analysis.application.FeedbackAnalysisService.AnalysisResult;
+import com.vocactionops.backend.analysis.domain.Sentiment;
 import com.vocactionops.backend.auth.token.JwtTokenProvider;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.dataset.domain.Dataset;
@@ -25,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -51,6 +55,9 @@ class DatasetFeedbackQueryIntegrationTests {
 
 	@Autowired
 	private FeedbackRepository feedbackRepository;
+
+	@Autowired
+	private FeedbackAnalysisService feedbackAnalysisService;
 
 	@Autowired
 	private DatabaseCleaner databaseCleaner;
@@ -214,11 +221,54 @@ class DatasetFeedbackQueryIntegrationTests {
 	}
 
 	@Test
+	void includesDatasetAndAnalysisSummaryInFeedbackList() throws Exception {
+		feedbackAnalysisService.startAnalysis(
+				firstOrganization.getId(),
+				appReviewFeedback.getId(),
+				"feedback-classifier-v1"
+		);
+		feedbackAnalysisService.completeAnalysis(
+				firstOrganization.getId(),
+				appReviewFeedback.getId(),
+				new AnalysisResult(
+						Sentiment.NEGATIVE,
+						new BigDecimal("-0.85000"),
+						"PAYMENT",
+						new BigDecimal("0.9000"),
+						"Coupon payment failed.",
+						new BigDecimal("0.8800")
+				)
+		);
+
+		mockMvc.perform(get("/api/v1/feedbacks")
+						.queryParam("datasetId", appReviewDataset.getId().toString())
+						.header("Authorization", bearer(admin)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.content[*].datasetName", contains(
+						appReviewDataset.getName(),
+						appReviewDataset.getName()
+				)))
+				.andExpect(jsonPath(
+						"$.data.content[?(@.externalId == 'review-001')].analysis.status",
+						contains("SUCCESS")
+				))
+				.andExpect(jsonPath(
+						"$.data.content[?(@.externalId == 'review-001')].analysis.sentiment",
+						contains("NEGATIVE")
+				))
+				.andExpect(jsonPath(
+						"$.data.content[?(@.externalId == 'review-001')].analysis.category",
+						contains("PAYMENT")
+				));
+	}
+
+	@Test
 	void returnsFeedbackDetailAndHidesOtherOrganizationFeedback() throws Exception {
 		mockMvc.perform(get("/api/v1/feedbacks/{feedbackId}", appReviewFeedback.getId())
 						.header("Authorization", bearer(admin)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.datasetId").value(appReviewDataset.getId()))
+				.andExpect(jsonPath("$.data.datasetName").value(appReviewDataset.getName()))
 				.andExpect(jsonPath("$.data.externalId").value(appReviewFeedback.getExternalId()))
 				.andExpect(jsonPath("$.data.content").value(appReviewFeedback.getContent()));
 

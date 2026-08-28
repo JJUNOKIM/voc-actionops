@@ -372,6 +372,8 @@ size
 
 * 페이지 크기
 
+목록 응답의 `analysis`는 화면 비교에 필요한 최신 분석 요약이다. 분석을 시작하지 않은 피드백은 `analysis`가 `null`이다.
+
 #### <Response 예시>
 
 ```json
@@ -709,14 +711,23 @@ size
       {
         "id": 1,
         "datasetId": 1,
+        "datasetName": "2026년 7월 앱 리뷰",
         "externalId": "review-001",
         "sourceType": "APP_REVIEW",
         "customerSegment": "신규 고객",
         "rating": 1.0,
         "content": "쿠폰 적용 후 결제가 안 돼요.",
         "productName": "모바일 앱",
+        "language": "ko",
         "feedbackCreatedAt": "2026-07-01T12:00:00",
-        "ingestedAt": "2026-07-03T10:00:00"
+        "ingestedAt": "2026-07-03T10:00:00",
+        "analysis": {
+          "status": "SUCCESS",
+          "sentiment": "NEGATIVE",
+          "category": "PAYMENT",
+          "urgencyScore": 0.9,
+          "confidenceScore": 0.88
+        }
       }
     ],
     "page": 0,
@@ -756,6 +767,7 @@ GET /api/v1/feedbacks/{feedbackId}
   "data": {
     "id": 1,
     "datasetId": 1,
+    "datasetName": "2026년 7월 앱 리뷰",
     "externalId": "review-001",
     "sourceType": "APP_REVIEW",
     "customerSegment": "신규 고객",

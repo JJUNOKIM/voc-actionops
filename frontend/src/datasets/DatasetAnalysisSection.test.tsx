@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ANALYSIS_POLL_INTERVAL_MS, DatasetAnalysisSection } from './DatasetAnalysisSection';
@@ -91,13 +92,15 @@ describe('DatasetAnalysisSection', () => {
       .mockResolvedValueOnce(completedJob);
 
     render(
-      <DatasetAnalysisSection
-        datasetId={17}
-        datasetStatus="ANALYZING"
-        totalCount={10}
-        canStart
-        onDatasetStatusChange={onDatasetStatusChange}
-      />,
+      <MemoryRouter>
+        <DatasetAnalysisSection
+          datasetId={17}
+          datasetStatus="ANALYZING"
+          totalCount={10}
+          canStart
+          onDatasetStatusChange={onDatasetStatusChange}
+        />
+      </MemoryRouter>,
     );
 
     expect(await screen.findByText('피드백을 분석하고 있습니다.')).toBeInTheDocument();
@@ -106,6 +109,10 @@ describe('DatasetAnalysisSection', () => {
     });
 
     expect(await screen.findByText('모든 피드백 분석이 완료되었습니다.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '분석 결과 보기' })).toHaveAttribute(
+      'href',
+      '/feedbacks?datasetId=17',
+    );
     expect(analysisApiMocks.datasetAnalysisStatusRequest).toHaveBeenCalledTimes(2);
     expect(onDatasetStatusChange).toHaveBeenLastCalledWith('ANALYZED');
 
@@ -138,13 +145,15 @@ describe('DatasetAnalysisSection', () => {
       .mockResolvedValueOnce(completedJob);
 
     render(
-      <DatasetAnalysisSection
-        datasetId={17}
-        datasetStatus="ANALYZED"
-        totalCount={10}
-        canStart
-        onDatasetStatusChange={vi.fn()}
-      />,
+      <MemoryRouter>
+        <DatasetAnalysisSection
+          datasetId={17}
+          datasetStatus="ANALYZED"
+          totalCount={10}
+          canStart
+          onDatasetStatusChange={vi.fn()}
+        />
+      </MemoryRouter>,
     );
 
     expect(await screen.findByText('분석 상태를 불러오지 못했습니다.')).toBeInTheDocument();

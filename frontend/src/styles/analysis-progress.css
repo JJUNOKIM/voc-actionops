@@ -249,6 +249,24 @@
   flex: 0 0 auto;
 }
 
+.analysis-results-link {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.analysis-results-link:hover {
+  color: var(--brand-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 680px) {
   .analysis-ready,
   .analysis-loading,

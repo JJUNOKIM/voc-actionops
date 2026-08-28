@@ -1,6 +1,9 @@
 package com.vocactionops.backend.feedback.application;
 
 import com.vocactionops.backend.analysis.application.FeedbackAnalysisView;
+import com.vocactionops.backend.analysis.domain.AnalysisStatus;
+import com.vocactionops.backend.analysis.domain.FeedbackAnalysis;
+import com.vocactionops.backend.analysis.domain.Sentiment;
 import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.auth.security.AuthenticatedUser;
 import com.vocactionops.backend.common.exception.CustomException;
@@ -15,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.vocactionops.backend.common.web.PageRequestFactory.newestFirst;
 
@@ -41,12 +48,29 @@ public class FeedbackQueryService {
 			int page,
 			int size
 	) {
-		return PageResponse.from(feedbackRepository.findPageByOrganization(
+		var feedbackPage = feedbackRepository.findPageByOrganization(
 				authenticatedUser.organizationId(),
 				datasetId,
 				sourceType,
 				newestFirst(page, size, "ingestedAt")
-		).map(FeedbackView::from));
+		);
+		List<Long> feedbackIds = feedbackPage.stream()
+				.map(Feedback::getId)
+				.toList();
+		Map<Long, FeedbackAnalysis> analysesByFeedbackId = feedbackIds.isEmpty()
+				? Map.of()
+				: analysisRepository.findAllByFeedbackIdsAndOrganization(
+						feedbackIds,
+						authenticatedUser.organizationId()
+				).stream().collect(Collectors.toMap(
+						analysis -> analysis.getFeedback().getId(),
+						Function.identity()
+				));
+
+		return PageResponse.from(feedbackPage.map(feedback -> FeedbackView.from(
+				feedback,
+				analysesByFeedbackId.get(feedback.getId())
+		)));
 	}
 
 	public FeedbackDetail getFeedback(AuthenticatedUser authenticatedUser, Long feedbackId) {
@@ -68,6 +92,7 @@ public class FeedbackQueryService {
 	public record FeedbackView(
 			Long id,
 			Long datasetId,
+			String datasetName,
 			String externalId,
 			SourceType sourceType,
 			String customerSegment,
@@ -76,12 +101,14 @@ public class FeedbackQueryService {
 			String content,
 			String language,
 			LocalDateTime feedbackCreatedAt,
-			LocalDateTime ingestedAt
+			LocalDateTime ingestedAt,
+			FeedbackAnalysisSummary analysis
 	) {
-		private static FeedbackView from(Feedback feedback) {
+		private static FeedbackView from(Feedback feedback, FeedbackAnalysis analysis) {
 			return new FeedbackView(
 					feedback.getId(),
 					feedback.getDataset().getId(),
+					feedback.getDataset().getName(),
 					feedback.getExternalId(),
 					feedback.getSourceType(),
 					feedback.getCustomerSegment(),
@@ -90,7 +117,29 @@ public class FeedbackQueryService {
 					feedback.getContent(),
 					feedback.getLanguage(),
 					feedback.getFeedbackCreatedAt(),
-					feedback.getIngestedAt()
+					feedback.getIngestedAt(),
+					FeedbackAnalysisSummary.from(analysis)
+			);
+		}
+	}
+
+	public record FeedbackAnalysisSummary(
+			AnalysisStatus status,
+			Sentiment sentiment,
+			String category,
+			BigDecimal urgencyScore,
+			BigDecimal confidenceScore
+	) {
+		private static FeedbackAnalysisSummary from(FeedbackAnalysis analysis) {
+			if (analysis == null) {
+				return null;
+			}
+			return new FeedbackAnalysisSummary(
+					analysis.getStatus(),
+					analysis.getSentiment(),
+					analysis.getCategory(),
+					analysis.getUrgencyScore(),
+					analysis.getConfidenceScore()
 			);
 		}
 	}
@@ -98,6 +147,7 @@ public class FeedbackQueryService {
 	public record FeedbackDetail(
 			Long id,
 			Long datasetId,
+			String datasetName,
 			String externalId,
 			SourceType sourceType,
 			String customerSegment,
@@ -113,6 +163,7 @@ public class FeedbackQueryService {
 			return new FeedbackDetail(
 					feedback.getId(),
 					feedback.getDataset().getId(),
+					feedback.getDataset().getName(),
 					feedback.getExternalId(),
 					feedback.getSourceType(),
 					feedback.getCustomerSegment(),

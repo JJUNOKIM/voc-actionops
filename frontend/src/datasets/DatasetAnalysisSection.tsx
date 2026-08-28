@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  ArrowRight,
   BrainCircuit,
   CheckCircle2,
   Clock3,
@@ -8,6 +9,7 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ApiError } from '../lib/api-client';
 import { datasetAnalysisStatusRequest, startDatasetAnalysisRequest } from './api';
@@ -266,6 +268,13 @@ function AnalysisProgress({ job }: { job: AnalysisJobView }) {
           <AlertCircle size={18} aria-hidden="true" />
           <span>{job.failureReason}</span>
         </div>
+      )}
+
+      {(job.jobStatus === 'COMPLETED' || job.jobStatus === 'COMPLETED_WITH_ERRORS') && (
+        <Link className="analysis-results-link" to={`/feedbacks?datasetId=${job.datasetId}`}>
+          <span>분석 결과 보기</span>
+          <ArrowRight size={17} aria-hidden="true" />
+        </Link>
       )}
     </div>
   );
