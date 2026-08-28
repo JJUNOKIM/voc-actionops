@@ -1,5 +1,6 @@
 import { apiRequest } from '../lib/api-client';
 import type {
+  AnalysisJobView,
   DatasetDetail,
   DatasetQuery,
   DatasetSummary,
@@ -34,6 +35,14 @@ export function datasetValidationErrorsRequest(
 ): Promise<PageResponse<DatasetValidationError>> {
   const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
   return apiRequest(`/api/v1/datasets/${datasetId}/validation-errors?${params.toString()}`);
+}
+
+export function startDatasetAnalysisRequest(datasetId: number): Promise<AnalysisJobView> {
+  return apiRequest(`/api/v1/datasets/${datasetId}/analyze`, { method: 'POST' });
+}
+
+export function datasetAnalysisStatusRequest(datasetId: number): Promise<AnalysisJobView> {
+  return apiRequest(`/api/v1/datasets/${datasetId}/analysis-status`);
 }
 
 export function uploadDatasetRequest(input: DatasetUploadInput): Promise<DatasetUploadResult> {

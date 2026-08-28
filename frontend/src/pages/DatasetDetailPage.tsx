@@ -7,11 +7,12 @@ import {
   FileWarning,
   RefreshCw,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
 import { datasetDetailRequest, datasetValidationErrorsRequest } from '../datasets/api';
+import { DatasetAnalysisSection } from '../datasets/DatasetAnalysisSection';
 import { formatDate, formatNumber } from '../datasets/format';
 import {
   datasetStatusLabel,
@@ -22,6 +23,7 @@ import {
 } from '../datasets/labels';
 import type {
   DatasetDetail,
+  DatasetStatus,
   DatasetValidationError,
   PageResponse,
 } from '../datasets/types';
@@ -49,16 +51,30 @@ export function DatasetDetailPage() {
   const { user } = useAuth();
   const datasetId = parseDatasetId(datasetIdParam);
   const canViewValidationErrors = user?.role === 'ADMIN' || user?.role === 'PM';
+  const canStartAnalysis = user?.role === 'ADMIN' || user?.role === 'PM';
   const [detailState, setDetailState] = useState<DetailState>(null);
   const [detailReload, setDetailReload] = useState(0);
   const [validationState, setValidationState] = useState<ValidationState>(null);
   const [validationCursor, setValidationCursor] = useState({ datasetId: 0, page: 0 });
   const [validationReload, setValidationReload] = useState(0);
+  const [analysisStatusOverride, setAnalysisStatusOverride] = useState<{
+    datasetId: number;
+    status: DatasetStatus;
+  } | null>(null);
   const detailRequestSequence = useRef(0);
   const validationRequestSequence = useRef(0);
 
   const validationPage =
     datasetId !== null && validationCursor.datasetId === datasetId ? validationCursor.page : 0;
+
+  const handleAnalysisStatusChange = useCallback(
+    (status: DatasetStatus) => {
+      if (datasetId !== null) {
+        setAnalysisStatusOverride({ datasetId, status });
+      }
+    },
+    [datasetId],
+  );
 
   useEffect(() => {
     if (datasetId === null) return;
@@ -168,6 +184,10 @@ export function DatasetDetailPage() {
   }
 
   const mappingEntries = sortedEntries(currentDetailState.data.columnMapping ?? {});
+  const displayedDatasetStatus =
+    analysisStatusOverride?.datasetId === datasetId
+      ? analysisStatusOverride.status
+      : currentDetailState.data.status;
   const currentValidationState =
     validationState?.datasetId === datasetId && validationState.page === validationPage
       ? validationState
@@ -189,9 +209,9 @@ export function DatasetDetailPage() {
           </p>
         </div>
         <span
-          className={`status-badge detail-status status-badge--${datasetStatusTone(currentDetailState.data.status)}`}
+          className={`status-badge detail-status status-badge--${datasetStatusTone(displayedDatasetStatus)}`}
         >
-          {datasetStatusLabel(currentDetailState.data.status)}
+          {datasetStatusLabel(displayedDatasetStatus)}
         </span>
       </header>
 
@@ -200,6 +220,14 @@ export function DatasetDetailPage() {
         <CountItem label="유효" value={currentDetailState.data.validCount} tone="valid" />
         <CountItem label="오류" value={currentDetailState.data.invalidCount} tone="invalid" />
       </section>
+
+      <DatasetAnalysisSection
+        datasetId={datasetId}
+        datasetStatus={displayedDatasetStatus}
+        totalCount={currentDetailState.data.validCount}
+        canStart={canStartAnalysis}
+        onDatasetStatusChange={handleAnalysisStatusChange}
+      />
 
       <section className="dataset-detail-section" aria-labelledby="dataset-information-title">
         <header className="detail-section-header">
@@ -216,7 +244,7 @@ export function DatasetDetailPage() {
             </div>
             <div>
               <dt>처리 상태</dt>
-              <dd>{datasetStatusLabel(currentDetailState.data.status)}</dd>
+              <dd>{datasetStatusLabel(displayedDatasetStatus)}</dd>
             </div>
             <div>
               <dt>등록 시각</dt>

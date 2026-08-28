@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  datasetAnalysisStatusRequest,
   datasetDetailRequest,
   datasetsRequest,
   datasetValidationErrorsRequest,
+  startDatasetAnalysisRequest,
   uploadDatasetRequest,
 } from './api';
 
@@ -41,6 +43,21 @@ describe('dataset API', () => {
     expect(apiRequestMock).toHaveBeenNthCalledWith(
       2,
       '/api/v1/datasets/17/validation-errors?page=2&size=20',
+    );
+  });
+
+  it('starts an analysis job and requests its latest status', async () => {
+    apiRequestMock.mockResolvedValue({ jobStatus: 'PENDING' });
+
+    await startDatasetAnalysisRequest(17);
+    await datasetAnalysisStatusRequest(17);
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, '/api/v1/datasets/17/analyze', {
+      method: 'POST',
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/v1/datasets/17/analysis-status',
     );
   });
 

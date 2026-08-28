@@ -1,4 +1,5 @@
 import type {
+  AnalysisJobStatus,
   DatasetStatus,
   DatasetValidationErrorCode,
   SourceType,
@@ -67,4 +68,20 @@ const validationErrorLabels: Record<DatasetValidationErrorCode, string> = {
 
 export function validationErrorLabel(code: DatasetValidationErrorCode): string {
   return validationErrorLabels[code];
+}
+
+const analysisJobStatusLabels: Record<AnalysisJobStatus, string> = {
+  PENDING: '시작 대기',
+  RUNNING: '분석 중',
+  COMPLETED: '분석 완료',
+  COMPLETED_WITH_ERRORS: '일부 실패',
+  FAILED: '작업 실패',
+};
+
+export function analysisJobStatusLabel(status: AnalysisJobStatus): string {
+  return analysisJobStatusLabels[status];
+}
+
+export function isActiveAnalysisJob(status: AnalysisJobStatus): boolean {
+  return status === 'PENDING' || status === 'RUNNING';
 }

@@ -30,6 +30,13 @@ export type DatasetValidationErrorCode =
   | 'INVALID_DATE_FORMAT'
   | 'DUPLICATED_EXTERNAL_ID';
 
+export type AnalysisJobStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'COMPLETED_WITH_ERRORS'
+  | 'FAILED';
+
 export interface PageResponse<T> {
   content: T[];
   page: number;
@@ -64,6 +71,21 @@ export interface DatasetValidationError {
   errorMessage: string;
   rawRow: Record<string, string>;
   createdAt: string;
+}
+
+export interface AnalysisJobView {
+  datasetId: number;
+  status: DatasetStatus;
+  jobId: string;
+  jobStatus: AnalysisJobStatus;
+  totalCount: number;
+  processedCount: number;
+  successCount: number;
+  failedCount: number;
+  progressRate: number;
+  failureReason: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
 }
 
 export interface DatasetQuery {
