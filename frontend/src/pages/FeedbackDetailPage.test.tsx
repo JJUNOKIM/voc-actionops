@@ -9,9 +9,14 @@ import { ApiError } from '../lib/api-client';
 
 const detailMocks = vi.hoisted(() => ({
   feedbackDetailRequest: vi.fn(),
+  useAuth: vi.fn(),
 }));
 
 vi.mock('../feedbacks/api', () => ({ feedbackDetailRequest: detailMocks.feedbackDetailRequest }));
+vi.mock('../auth/useAuth', () => ({ useAuth: detailMocks.useAuth }));
+vi.mock('../feedbacks/FeedbackCorrectionSection', () => ({
+  FeedbackCorrectionSection: () => <div data-testid="correction-section" />,
+}));
 
 const detail: FeedbackDetail = {
   id: 31,
@@ -45,6 +50,7 @@ describe('FeedbackDetailPage', () => {
   beforeEach(() => {
     detailMocks.feedbackDetailRequest.mockReset();
     detailMocks.feedbackDetailRequest.mockResolvedValue(detail);
+    detailMocks.useAuth.mockReturnValue({ user: { role: 'ADMIN' } });
   });
 
   it('renders original content, AI result, and a low-confidence warning', async () => {
@@ -57,11 +63,21 @@ describe('FeedbackDetailPage', () => {
     expect(screen.getByText('PAYMENT')).toBeInTheDocument();
     expect(screen.getByText('65.0%')).toBeInTheDocument();
     expect(screen.getByText(/신뢰도가 70% 미만입니다/)).toBeInTheDocument();
+    expect(screen.getByTestId('correction-section')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '피드백 목록' })).toHaveAttribute(
       'href',
       '/feedbacks?datasetId=17',
     );
     expect(detailMocks.feedbackDetailRequest).toHaveBeenCalledWith(31);
+  });
+
+  it('does not expose the protected correction section to a viewer', async () => {
+    detailMocks.useAuth.mockReturnValue({ user: { role: 'VIEWER' } });
+
+    renderFeedbackDetailPage('/feedbacks/31');
+
+    expect(await screen.findByRole('heading', { name: 'review-031' })).toBeInTheDocument();
+    expect(screen.queryByTestId('correction-section')).not.toBeInTheDocument();
   });
 
   it('renders the unanalysed state', async () => {
