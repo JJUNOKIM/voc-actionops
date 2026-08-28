@@ -7,6 +7,7 @@ import { AuthProvider } from './auth/AuthContext';
 import './styles/index.css';
 import './styles/datasets.css';
 import './styles/dataset-detail.css';
+import './styles/analysis-progress.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
