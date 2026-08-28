@@ -7,13 +7,15 @@ import {
   MessageSquareText,
   TriangleAlert,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { useAuth } from '../auth/useAuth';
 import { formatDate } from '../datasets/format';
 import { sourceTypeLabel } from '../datasets/labels';
 import { feedbackDetailRequest } from '../feedbacks/api';
+import { FeedbackCorrectionSection } from '../feedbacks/FeedbackCorrectionSection';
 import { feedbackDisplayId, formatRating, formatScore } from '../feedbacks/format';
 import {
   feedbackAnalysisStatusLabel,
@@ -31,7 +33,10 @@ type DetailState =
 
 export function FeedbackDetailPage() {
   const { feedbackId: feedbackIdParam } = useParams();
+  const { user } = useAuth();
   const feedbackId = parseFeedbackId(feedbackIdParam);
+  const canCorrectAnalysis =
+    user?.role === 'ADMIN' || user?.role === 'PM' || user?.role === 'CS';
   const [state, setState] = useState<DetailState>(null);
   const [reloadSequence, setReloadSequence] = useState(0);
   const requestSequence = useRef(0);
@@ -62,6 +67,19 @@ export function FeedbackDetailPage() {
     setState(null);
     setReloadSequence((current) => current + 1);
   }
+
+  const handleAnalysisCorrected = useCallback(
+    (analysis: FeedbackAnalysisDetail) => {
+      setState((current) => {
+        if (current?.status !== 'success' || current.feedbackId !== feedbackId) return current;
+        return {
+          ...current,
+          data: { ...current.data, analysis },
+        };
+      });
+    },
+    [feedbackId],
+  );
 
   if (feedbackId === null) {
     return (
@@ -136,6 +154,14 @@ export function FeedbackDetailPage() {
         </header>
         <FeedbackAnalysisResult analysis={feedback.analysis} />
       </section>
+
+      {canCorrectAnalysis && feedback.analysis?.status === 'SUCCESS' && (
+        <FeedbackCorrectionSection
+          feedbackId={feedback.id}
+          analysis={feedback.analysis}
+          onAnalysisCorrected={handleAnalysisCorrected}
+        />
+      )}
     </div>
   );
 }

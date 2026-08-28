@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { feedbackDetailRequest, feedbacksRequest } from './api';
+import {
+  correctFeedbackAnalysisRequest,
+  feedbackCorrectionsRequest,
+  feedbackDetailRequest,
+  feedbacksRequest,
+} from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
 
@@ -24,5 +29,30 @@ describe('feedback API', () => {
     await feedbackDetailRequest(31);
 
     expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/feedbacks/31');
+  });
+
+  it('submits an analysis correction', async () => {
+    await correctFeedbackAnalysisRequest(31, {
+      fieldName: 'category',
+      correctedValue: 'CHECKOUT',
+      reason: '결제 전 단계의 오류로 재분류',
+    });
+
+    expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/feedbacks/31/analysis', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        fieldName: 'category',
+        correctedValue: 'CHECKOUT',
+        reason: '결제 전 단계의 오류로 재분류',
+      }),
+    });
+  });
+
+  it('requests a correction history page', async () => {
+    await feedbackCorrectionsRequest(31, 2, 5);
+
+    expect(apiRequestMock).toHaveBeenCalledWith(
+      '/api/v1/feedbacks/31/corrections?page=2&size=5',
+    );
   });
 });

@@ -2,6 +2,7 @@ import type { SourceType } from '../datasets/types';
 
 export type FeedbackAnalysisStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
 export type Sentiment = 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+export type FeedbackCorrectionField = 'sentiment' | 'category' | 'urgency_score';
 
 export interface FeedbackAnalysisSummary {
   status: FeedbackAnalysisStatus;
@@ -38,6 +39,22 @@ export interface FeedbackAnalysisDetail extends FeedbackAnalysisSummary {
 
 export interface FeedbackDetail extends Omit<FeedbackListItem, 'analysis'> {
   analysis: FeedbackAnalysisDetail | null;
+}
+
+export interface FeedbackCorrectionRequest {
+  fieldName: FeedbackCorrectionField;
+  correctedValue: string;
+  reason: string;
+}
+
+export interface FeedbackCorrection {
+  id: number;
+  fieldName: FeedbackCorrectionField;
+  aiValue: string;
+  correctedValue: string;
+  reason: string;
+  correctedBy: number;
+  createdAt: string;
 }
 
 export interface FeedbackQuery {
