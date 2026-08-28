@@ -8,6 +8,7 @@ import './styles/index.css';
 import './styles/datasets.css';
 import './styles/dataset-detail.css';
 import './styles/analysis-progress.css';
+import './styles/feedbacks.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

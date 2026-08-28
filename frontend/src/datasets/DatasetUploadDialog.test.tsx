@@ -33,7 +33,7 @@ describe('DatasetUploadDialog', () => {
     await user.upload(screen.getByLabelText('CSV 파일'), file);
 
     expect(await screen.findByDisplayValue('august-reviews')).toBeInTheDocument();
-    expect(screen.getByLabelText('review_text 매핑')).toHaveValue('content');
+    expect(await screen.findByLabelText('review_text 매핑')).toHaveValue('content');
     expect(screen.getByLabelText('score 매핑')).toHaveValue('rating');
 
     await user.click(screen.getByRole('button', { name: '업로드' }));

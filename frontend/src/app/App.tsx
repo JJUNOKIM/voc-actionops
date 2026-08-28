@@ -3,6 +3,8 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './AppShell';
 import { DatasetDetailPage } from '../pages/DatasetDetailPage';
 import { DatasetsPage } from '../pages/DatasetsPage';
+import { FeedbackDetailPage } from '../pages/FeedbackDetailPage';
+import { FeedbacksPage } from '../pages/FeedbacksPage';
 import { OverviewPage } from '../pages/OverviewPage';
 import { LoginPage } from '../auth/LoginPage';
 import { useAuth } from '../auth/useAuth';
@@ -16,6 +18,8 @@ export function App() {
           <Route index element={<OverviewPage />} />
           <Route path="datasets" element={<DatasetsPage />} />
           <Route path="datasets/:datasetId" element={<DatasetDetailPage />} />
+          <Route path="feedbacks" element={<FeedbacksPage />} />
+          <Route path="feedbacks/:feedbackId" element={<FeedbackDetailPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

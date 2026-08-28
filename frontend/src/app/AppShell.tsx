@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquareText,
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -145,6 +146,10 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         <NavLink className="nav-item" to="/datasets" onClick={onNavigate}>
           <Database size={19} aria-hidden="true" />
           <span>데이터셋</span>
+        </NavLink>
+        <NavLink className="nav-item" to="/feedbacks" onClick={onNavigate}>
+          <MessageSquareText size={19} aria-hidden="true" />
+          <span>피드백</span>
         </NavLink>
       </nav>
 
