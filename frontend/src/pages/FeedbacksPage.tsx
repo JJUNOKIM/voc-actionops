@@ -93,7 +93,6 @@ export function FeedbacksPage() {
     <div className="page-container feedbacks-page">
       <header className="page-header datasets-page-header">
         <div>
-          <p className="section-label">VOC WORKSPACE</p>
           <h1>피드백</h1>
           <p className="page-description">고객 원문과 AI 분석 결과를 함께 검토합니다.</p>
         </div>
@@ -245,8 +244,12 @@ function FeedbackTable({
               <td data-label="AI 분류">
                 <FeedbackAnalysisCell analysis={feedback.analysis} />
               </td>
-              <td data-label="긴급도">{formatScore(feedback.analysis?.urgencyScore ?? null)}</td>
-              <td data-label="신뢰도">{formatScore(feedback.analysis?.confidenceScore ?? null)}</td>
+              <td data-label="긴급도">
+                <FeedbackScore value={feedback.analysis?.urgencyScore ?? null} kind="urgency" />
+              </td>
+              <td data-label="신뢰도">
+                <FeedbackScore value={feedback.analysis?.confidenceScore ?? null} kind="confidence" />
+              </td>
               <td data-label="작성 시각" className="feedback-date-cell">
                 {formatDate(feedback.feedbackCreatedAt ?? feedback.ingestedAt)}
               </td>
@@ -254,6 +257,37 @@ function FeedbackTable({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function FeedbackScore({
+  value,
+  kind,
+}: {
+  value: number | null;
+  kind: 'urgency' | 'confidence';
+}) {
+  if (value === null) return <span className="feedback-score-empty">-</span>;
+
+  const percent = Math.max(0, Math.min(100, value * 100));
+  const tone =
+    kind === 'urgency'
+      ? value >= 0.7
+        ? 'danger'
+        : value >= 0.4
+          ? 'warning'
+          : 'default'
+      : value < 0.7
+        ? 'warning'
+        : 'default';
+
+  return (
+    <div className={`feedback-score feedback-score--${tone}`}>
+      <span>{formatScore(value)}</span>
+      <span className="feedback-score-track" aria-hidden="true">
+        <span style={{ width: `${percent}%` }} />
+      </span>
     </div>
   );
 }

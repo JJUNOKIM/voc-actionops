@@ -62,8 +62,8 @@ describe('authentication flow', () => {
 
     await user.click(screen.getByRole('button', { name: '로그인' }));
 
-    expect(await screen.findByRole('heading', { name: '개요' })).toBeInTheDocument();
-    expect(screen.getAllByText('VOC ActionOps Demo')).toHaveLength(2);
+    expect(await screen.findByRole('heading', { name: '운영 개요' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary')).toHaveTextContent('VOC ActionOps Demo');
     expect(authApiMocks.loginRequest).toHaveBeenCalledWith(
       'admin@voc-actionops.local',
       'demo-password',

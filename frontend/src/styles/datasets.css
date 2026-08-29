@@ -10,12 +10,14 @@
 }
 
 .datasets-page-header {
-  min-height: 112px;
+  min-height: 76px;
   align-items: flex-start;
 }
 
 .datasets-page-header > .primary-button {
+  min-height: 40px;
   flex: 0 0 auto;
+  font-size: 12px;
 }
 
 .upload-success {
@@ -58,7 +60,7 @@
 }
 
 .dataset-workspace {
-  margin-top: 30px;
+  margin-top: 16px;
   border-top: 1px solid var(--border-strong);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
@@ -66,11 +68,11 @@
 
 .dataset-toolbar {
   display: flex;
-  min-height: 78px;
+  min-height: 64px;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 16px 18px 16px 22px;
+  padding: 12px 16px 12px 18px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -84,7 +86,7 @@
 .dataset-toolbar-copy h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
@@ -149,11 +151,11 @@
 }
 
 .dataset-table th {
-  height: 42px;
+  height: 38px;
   padding: 0 14px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #f8f9f9;
+  background: #fafbfb;
   font-size: 10px;
   font-weight: 800;
   text-align: left;
@@ -188,7 +190,7 @@
 }
 
 .dataset-table td {
-  height: 74px;
+  height: 64px;
   padding: 12px 14px;
   border-bottom: 1px solid #e5e9eb;
   color: #3b4650;
@@ -208,13 +210,13 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .dataset-name-cell a {
   overflow: hidden;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-overflow: ellipsis;
   text-decoration: none;
@@ -236,7 +238,7 @@
 .dataset-name-cell span,
 .created-at-cell {
   color: var(--subtle);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .status-badge {
@@ -277,6 +279,22 @@
   background: #fff8eb;
 }
 
+.dataset-table .status-badge {
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dataset-table .status-badge::before {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
 .valid-count {
   color: var(--brand) !important;
 }
@@ -288,7 +306,7 @@
 
 .dataset-pagination {
   display: flex;
-  min-height: 58px;
+  min-height: 52px;
   align-items: center;
   justify-content: flex-end;
   gap: 16px;

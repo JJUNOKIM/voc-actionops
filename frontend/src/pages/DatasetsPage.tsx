@@ -120,7 +120,6 @@ export function DatasetsPage() {
     <div className="page-container datasets-page">
       <header className="page-header datasets-page-header">
         <div>
-          <p className="section-label">DATA SOURCES</p>
           <h1>데이터셋</h1>
           <p className="page-description">분석할 VOC 원천 데이터와 처리 상태를 관리합니다.</p>
         </div>

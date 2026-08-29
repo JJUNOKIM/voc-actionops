@@ -1,4 +1,4 @@
-import { CheckCircle2, KeyRound, UserRound, UsersRound } from 'lucide-react';
+import { KeyRound, UserRound, UsersRound } from 'lucide-react';
 
 import { useAuth } from '../auth/useAuth';
 import type { Role } from '../types/api';
@@ -21,21 +21,15 @@ export function OverviewPage() {
     <div className="page-container">
       <header className="page-header">
         <div>
-          <p className="section-label">WORKSPACE</p>
-          <h1>개요</h1>
+          <h1>운영 개요</h1>
           <p className="page-description">{user.organizationName}</p>
-        </div>
-        <div className="connection-badge">
-          <CheckCircle2 size={17} aria-hidden="true" />
-          <span>연결됨</span>
         </div>
       </header>
 
       <section className="workspace-section" aria-labelledby="workspace-heading">
         <div className="section-heading-row">
           <div>
-            <p className="section-label">CURRENT SESSION</p>
-            <h2 id="workspace-heading">작업 공간 정보</h2>
+            <h2 id="workspace-heading">내 작업 공간</h2>
           </div>
           <span className="workspace-id">ORG {user.organizationId}</span>
         </div>
