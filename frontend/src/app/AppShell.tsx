@@ -1,5 +1,4 @@
 import {
-  Activity,
   Database,
   LayoutDashboard,
   LogOut,
@@ -133,12 +132,11 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         </span>
         <div>
           <strong>VOC ActionOps</strong>
-          <span>Operations</span>
+          <span>{user.organizationName}</span>
         </div>
       </div>
 
       <nav className="sidebar-nav" aria-label="주요 메뉴">
-        <p className="sidebar-section-label">WORKSPACE</p>
         <NavLink className="nav-item" to="/" end onClick={onNavigate}>
           <LayoutDashboard size={19} aria-hidden="true" />
           <span>개요</span>
@@ -152,14 +150,6 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
           <span>피드백</span>
         </NavLink>
       </nav>
-
-      <div className="sidebar-system-status">
-        <Activity size={17} aria-hidden="true" />
-        <div>
-          <span>API</span>
-          <strong>Connected</strong>
-        </div>
-      </div>
 
       <div className="sidebar-account">
         <div className="account-avatar" aria-hidden="true">

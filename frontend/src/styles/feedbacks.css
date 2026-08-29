@@ -54,11 +54,11 @@
 }
 
 .feedback-table th {
-  height: 42px;
+  height: 38px;
   padding: 0 12px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #f8f9f9;
+  background: #fafbfb;
   font-size: 10px;
   font-weight: 800;
   text-align: left;
@@ -96,8 +96,8 @@
 }
 
 .feedback-table td {
-  height: 88px;
-  padding: 13px 12px;
+  height: 74px;
+  padding: 10px 12px;
   border-bottom: 1px solid #e5e9eb;
   color: #3b4650;
   font-size: 11px;
@@ -121,7 +121,7 @@
 }
 
 .feedback-content-cell {
-  gap: 6px;
+  gap: 4px;
 }
 
 .feedback-content-cell a,
@@ -156,7 +156,7 @@
 }
 
 .feedback-dataset-cell {
-  gap: 5px;
+  gap: 4px;
 }
 
 .feedback-dataset-cell a {
@@ -171,7 +171,62 @@
 
 .feedback-analysis-cell {
   align-items: flex-start;
+  gap: 4px;
+}
+
+.feedback-score {
+  display: inline-flex;
+  width: 72px;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 6px;
+  color: #46525d;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.feedback-score-track {
+  display: block;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  background: #e5e8ea;
+}
+
+.feedback-score-track > span {
+  display: block;
+  height: 100%;
+  background: #638178;
+}
+
+.feedback-score--warning .feedback-score-track > span {
+  background: #b57a22;
+}
+
+.feedback-score--danger .feedback-score-track > span {
+  background: var(--danger);
+}
+
+.feedback-score-empty {
+  color: var(--subtle);
+}
+
+.feedback-table .status-badge,
+.feedback-table .sentiment-badge {
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.feedback-table .status-badge::before,
+.feedback-table .sentiment-badge::before {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
 }
 
 .feedback-analysis-cell > span:last-child {
@@ -849,6 +904,10 @@
     grid-column: 1 / -1;
   }
 
+  .feedback-score {
+    width: 96px;
+  }
+
   .feedback-table td:first-child,
   .feedback-table td:nth-child(2),
   .feedback-table td:nth-child(3) {
@@ -872,6 +931,12 @@
   .feedback-table td:last-child {
     justify-content: flex-start;
     padding-bottom: 0 !important;
+  }
+
+  .feedback-content-cell,
+  .feedback-dataset-cell,
+  .feedback-analysis-cell {
+    text-align: left;
   }
 
   .feedback-content-cell a,

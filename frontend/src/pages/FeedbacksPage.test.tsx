@@ -60,7 +60,9 @@ describe('FeedbacksPage', () => {
     expect(screen.getAllByText('8월 앱 리뷰')).toHaveLength(2);
     expect(screen.getByText('부정')).toBeInTheDocument();
     expect(screen.getByText('PAYMENT')).toBeInTheDocument();
-    expect(screen.getByText('90.0%')).toBeInTheDocument();
+    const urgencyScore = screen.getByText('90.0%').closest('.feedback-score');
+    expect(urgencyScore).toHaveClass('feedback-score--danger');
+    expect(urgencyScore?.querySelector('.feedback-score-track > span')).toHaveStyle({ width: '90%' });
     expect(pageMocks.feedbacksRequest).toHaveBeenLastCalledWith({
       page: 0,
       size: 20,
