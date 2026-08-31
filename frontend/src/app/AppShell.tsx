@@ -11,15 +11,8 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
-import type { Role, UserProfile } from '../types/api';
-
-const roleLabels: Record<Role, string> = {
-  ADMIN: '관리자',
-  PM: '프로덕트 매니저',
-  CS: '고객 지원',
-  DEVELOPER: '개발자',
-  VIEWER: '뷰어',
-};
+import type { UserProfile } from '../types/api';
+import { roleLabel } from '../users/labels';
 
 export function AppShell() {
   const { user, logout } = useAuth();
@@ -162,7 +155,7 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         </div>
         <div className="account-copy">
           <strong>{user.name}</strong>
-          <span>{roleLabels[user.role]}</span>
+          <span>{roleLabel(user.role)}</span>
         </div>
         <button
           className="icon-button account-logout"

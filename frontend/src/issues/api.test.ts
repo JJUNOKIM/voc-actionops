@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { issueDetailRequest, issueFeedbacksRequest, issuesRequest } from './api';
+import {
+  assignIssueRequest,
+  changeActionStatusRequest,
+  changeIssueStatusRequest,
+  createIssueActionRequest,
+  issueDetailRequest,
+  issueFeedbacksRequest,
+  issuesRequest,
+} from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
 
@@ -42,5 +50,35 @@ describe('issue API', () => {
       2,
       '/api/v1/issues/7/feedbacks?representativeOnly=true&page=2&size=10',
     );
+  });
+
+  it('sends issue and action mutations to their dedicated endpoints', async () => {
+    apiRequestMock.mockResolvedValue({});
+
+    await assignIssueRequest(7, 3);
+    await changeIssueStatusRequest(7, 'IN_PROGRESS');
+    await createIssueActionRequest(7, {
+      title: '로그 확인',
+      assigneeId: 3,
+      dueDate: '2026-09-05',
+    });
+    await changeActionStatusRequest(21, 'DONE');
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, '/api/v1/issues/7/assignee', {
+      method: 'PATCH',
+      body: JSON.stringify({ assigneeId: 3 }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, '/api/v1/issues/7/status', {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'IN_PROGRESS' }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(3, '/api/v1/issues/7/actions', {
+      method: 'POST',
+      body: JSON.stringify({ title: '로그 확인', assigneeId: 3, dueDate: '2026-09-05' }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(4, '/api/v1/actions/21/status', {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'DONE' }),
+    });
   });
 });

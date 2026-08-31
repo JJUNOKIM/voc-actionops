@@ -35,3 +35,10 @@ export interface UserProfile {
   name: string;
   role: Role;
 }
+
+export interface OrganizationUser {
+  id: number;
+  email: string;
+  name: string;
+  role: Role;
+}
