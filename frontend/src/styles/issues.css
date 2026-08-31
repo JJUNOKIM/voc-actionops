@@ -481,6 +481,171 @@
   color: var(--muted);
 }
 
+.issue-add-action {
+  min-height: 34px;
+  gap: 6px;
+  padding-inline: 10px;
+  font-size: 10px;
+}
+
+.issue-add-action span {
+  margin-top: 0;
+}
+
+.issue-management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.issue-management-grid.is-single {
+  grid-template-columns: 1fr;
+}
+
+.issue-management-grid > * {
+  min-width: 0;
+  padding: 20px 22px;
+}
+
+.issue-management-grid > * + * {
+  border-left: 1px solid var(--border);
+}
+
+.issue-assignment-control > div:first-child,
+.issue-status-control > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.issue-assignment-control h3,
+.issue-status-control h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.issue-assignment-control > div:first-child span,
+.issue-status-control > div:first-child span {
+  color: var(--subtle);
+  font-size: 9px;
+}
+
+.issue-assignment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.issue-assignment-form select {
+  width: 100%;
+  height: 38px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: 11px;
+}
+
+.issue-assignment-form select:focus {
+  border-color: var(--focus);
+  outline: 3px solid rgb(23 131 110 / 14%);
+  outline-offset: 1px;
+}
+
+.issue-assignment-form .secondary-button {
+  min-height: 38px;
+  gap: 6px;
+  padding-inline: 12px;
+  font-size: 10px;
+}
+
+.issue-users-error {
+  display: grid;
+  min-height: 42px;
+  grid-template-columns: 20px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 4px 5px 4px 10px;
+  border-left: 3px solid var(--danger);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.issue-users-error span {
+  color: #7c3933;
+  font-size: 10px;
+}
+
+.issue-users-error .icon-button {
+  width: 34px;
+  height: 34px;
+}
+
+.issue-status-flow {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.issue-status-flow > strong {
+  color: #3b4650;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.issue-status-flow > svg {
+  flex: 0 0 auto;
+  color: var(--subtle);
+}
+
+.issue-status-flow > div {
+  display: flex;
+  min-width: 0;
+  gap: 7px;
+}
+
+.issue-status-flow .secondary-button {
+  min-height: 38px;
+  gap: 6px;
+  padding-inline: 11px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.issue-management-note {
+  margin: 9px 0 0;
+  color: #8b5a10;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.issue-operation-notice {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+}
+
+.issue-operation-notice--success {
+  color: var(--brand-dark);
+  background: #f3faf7;
+}
+
+.issue-operation-notice--error {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
 .issue-action-table {
   width: 100%;
   min-width: 700px;
@@ -518,6 +683,61 @@
   color: #3b4650;
   font-size: 10px;
   vertical-align: middle;
+}
+
+.issue-action-table--managed th:first-child,
+.issue-action-table--managed td:first-child {
+  width: 13%;
+}
+
+.issue-action-table--managed th:nth-child(2),
+.issue-action-table--managed td:nth-child(2) {
+  width: 39%;
+}
+
+.issue-action-table--managed th:nth-child(3),
+.issue-action-table--managed td:nth-child(3) {
+  width: 14%;
+}
+
+.issue-action-table--managed th:nth-child(4),
+.issue-action-table--managed td:nth-child(4) {
+  width: 15%;
+  text-align: right;
+}
+
+.issue-action-table--managed th:last-child,
+.issue-action-table--managed td:last-child {
+  width: 19%;
+}
+
+.issue-action-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.issue-action-controls button {
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: #3b4650;
+  background: var(--surface);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.issue-action-controls button:hover:not(:disabled) {
+  border-color: #9fa9b0;
+  background: #f8f9fa;
+}
+
+.issue-action-unavailable {
+  color: var(--subtle);
 }
 
 .action-status {
@@ -721,6 +941,42 @@
   font-size: 11px;
 }
 
+.action-dialog {
+  width: min(100%, 610px);
+}
+
+.action-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.action-dialog .form-control textarea {
+  width: 100%;
+  min-height: 104px;
+  padding: 11px;
+  resize: vertical;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.action-dialog .form-control textarea:focus {
+  border-color: var(--focus);
+  outline: 3px solid rgb(23 131 110 / 14%);
+  outline-offset: 1px;
+}
+
+.action-dialog-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 0.7fr);
+  gap: 12px;
+}
+
 @media (max-width: 1120px) {
   .issue-toolbar {
     align-items: flex-start;
@@ -860,6 +1116,19 @@
   .issue-action-copy {
     text-align: left;
   }
+
+  .issue-management-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .issue-management-grid > * + * {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  .issue-action-controls {
+    justify-content: flex-end;
+  }
 }
 
 @media (max-width: 680px) {
@@ -942,6 +1211,58 @@
 
   .issue-section-header {
     padding-inline: 16px;
+  }
+
+  .issue-management-grid > * {
+    padding: 18px 16px;
+  }
+
+  .issue-assignment-control > div:first-child,
+  .issue-status-control > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .issue-assignment-form {
+    grid-template-columns: 1fr;
+  }
+
+  .issue-assignment-form .secondary-button {
+    width: 100%;
+  }
+
+  .issue-status-flow {
+    align-items: flex-start;
+  }
+
+  .issue-status-flow > svg {
+    margin-top: 10px;
+  }
+
+  .issue-status-flow > div {
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .issue-status-flow .secondary-button {
+    width: 100%;
+  }
+
+  .issue-add-action {
+    padding-inline: 9px;
+  }
+
+  .issue-action-controls {
+    flex-wrap: wrap;
+  }
+
+  .issue-action-controls button {
+    min-height: 32px;
+  }
+
+  .action-dialog-row {
+    grid-template-columns: 1fr;
   }
 
   .issue-feedback-main {

@@ -7,13 +7,28 @@ import { IssueDetailPage } from './IssueDetailPage';
 import type { PageResponse } from '../datasets/types';
 import type { IssueDetail, IssueFeedback } from '../issues/types';
 import { ApiError } from '../lib/api-client';
+import type { UserProfile } from '../types/api';
 
 const detailMocks = vi.hoisted(() => ({
   issueDetailRequest: vi.fn(),
   issueFeedbacksRequest: vi.fn(),
+  changeActionStatusRequest: vi.fn(),
+  organizationUsersRequest: vi.fn(),
+  useAuth: vi.fn(),
 }));
 
 vi.mock('../issues/api', () => detailMocks);
+vi.mock('../users/api', () => ({ organizationUsersRequest: detailMocks.organizationUsersRequest }));
+vi.mock('../auth/useAuth', () => ({ useAuth: detailMocks.useAuth }));
+
+const admin: UserProfile = {
+  id: 1,
+  organizationId: 11,
+  organizationName: 'VOC ActionOps Demo',
+  email: 'admin@voc-actionops.local',
+  name: 'Demo Admin',
+  role: 'ADMIN',
+};
 
 const detail: IssueDetail = {
   id: 7,
@@ -76,8 +91,16 @@ describe('IssueDetailPage', () => {
   beforeEach(() => {
     detailMocks.issueDetailRequest.mockReset();
     detailMocks.issueFeedbacksRequest.mockReset();
+    detailMocks.changeActionStatusRequest.mockReset();
+    detailMocks.organizationUsersRequest.mockReset();
+    detailMocks.useAuth.mockReset();
     detailMocks.issueDetailRequest.mockResolvedValue(detail);
     detailMocks.issueFeedbacksRequest.mockResolvedValue(feedbackPage);
+    detailMocks.organizationUsersRequest.mockResolvedValue([
+      { id: 1, email: admin.email, name: admin.name, role: admin.role },
+      { id: 3, email: 'developer@example.com', name: '김개발', role: 'DEVELOPER' },
+    ]);
+    detailMocks.useAuth.mockReturnValue({ user: admin });
   });
 
   it('renders issue context, actions, and related feedback links', async () => {
@@ -96,6 +119,21 @@ describe('IssueDetailPage', () => {
     expect(screen.getByText('92.0%')).toBeInTheDocument();
     expect(detailMocks.issueDetailRequest).toHaveBeenCalledWith(7);
     expect(detailMocks.issueFeedbacksRequest).toHaveBeenCalledWith(7, 0, 10, false);
+    expect(await screen.findByRole('heading', { name: '이슈 관리' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '해결로 변경' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '조치 등록' })).toBeInTheDocument();
+  });
+
+  it('hides mutation controls from a viewer', async () => {
+    detailMocks.useAuth.mockReturnValue({ user: { ...admin, role: 'VIEWER' } });
+
+    renderIssueDetailPage('/issues/7');
+
+    expect(await screen.findByRole('heading', { name: '쿠폰 적용 후 결제 실패' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '이슈 관리' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '조치 등록' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '완료' })).not.toBeInTheDocument();
+    expect(detailMocks.organizationUsersRequest).not.toHaveBeenCalled();
   });
 
   it('moves through related feedback pages', async () => {
@@ -108,6 +146,29 @@ describe('IssueDetailPage', () => {
     await waitFor(() =>
       expect(detailMocks.issueFeedbacksRequest).toHaveBeenLastCalledWith(7, 1, 10, false),
     );
+  });
+
+  it('updates an action with the server response', async () => {
+    const user = userEvent.setup();
+    const completedAction = {
+      ...detail.actions[0],
+      status: 'DONE' as const,
+      completedAt: '2026-08-31T11:00:00',
+    };
+    detailMocks.changeActionStatusRequest.mockResolvedValue(completedAction);
+
+    renderIssueDetailPage('/issues/7');
+    await screen.findByText('결제 승인 로그 확인');
+
+    await user.click(screen.getByRole('button', { name: '완료' }));
+
+    await waitFor(() =>
+      expect(detailMocks.changeActionStatusRequest).toHaveBeenCalledWith(11, 'DONE'),
+    );
+    expect(
+      await screen.findByText('조치 상태를 변경했습니다. 현재 상태: 완료'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '완료' })).not.toBeInTheDocument();
   });
 
   it('retries a failed detail request and rejects an invalid route id', async () => {

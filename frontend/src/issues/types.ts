@@ -77,3 +77,10 @@ export interface IssueQuery {
   from?: string;
   to?: string;
 }
+
+export interface CreateIssueActionRequest {
+  title: string;
+  description?: string;
+  assigneeId?: number;
+  dueDate?: string;
+}

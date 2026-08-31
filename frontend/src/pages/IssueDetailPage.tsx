@@ -5,17 +5,24 @@ import {
   ChevronRight,
   ClipboardCheck,
   MessagesSquare,
+  Plus,
   RefreshCw,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { useAuth } from '../auth/useAuth';
 import { formatDate, formatNumber } from '../datasets/format';
 import type { PageResponse } from '../datasets/types';
 import { sourceTypeLabel } from '../datasets/labels';
 import { feedbackDisplayId, formatRating, formatScore } from '../feedbacks/format';
-import { issueDetailRequest, issueFeedbacksRequest } from '../issues/api';
+import { ActionCreateDialog } from '../issues/ActionCreateDialog';
+import {
+  changeActionStatusRequest,
+  issueDetailRequest,
+  issueFeedbacksRequest,
+} from '../issues/api';
 import {
   actionStatusLabel,
   actionStatusTone,
@@ -26,7 +33,16 @@ import {
   priorityTone,
 } from '../issues/format';
 import type { IssueAction, IssueDetail, IssueFeedback } from '../issues/types';
+import { IssueManagementPanel } from '../issues/IssueManagementPanel';
+import {
+  actionTransitionLabel,
+  canChangeActionStatus,
+  canManageIssue,
+  nextActionStatuses,
+} from '../issues/workflow';
 import { ApiError } from '../lib/api-client';
+import type { OrganizationUser, UserProfile } from '../types/api';
+import { organizationUsersRequest } from '../users/api';
 
 const RELATED_FEEDBACK_PAGE_SIZE = 10;
 
@@ -47,15 +63,27 @@ type FeedbackState =
 
 export function IssueDetailPage() {
   const { issueId: issueIdParam } = useParams();
+  const { user } = useAuth();
   const issueId = parseIssueId(issueIdParam);
   const [detailState, setDetailState] = useState<DetailState>(null);
   const [feedbackState, setFeedbackState] = useState<FeedbackState>(null);
   const [feedbackPagination, setFeedbackPagination] = useState({ issueId: null as number | null, page: 0 });
   const [detailReloadSequence, setDetailReloadSequence] = useState(0);
   const [feedbackReloadSequence, setFeedbackReloadSequence] = useState(0);
+  const [users, setUsers] = useState<OrganizationUser[] | null>(null);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [usersReloadSequence, setUsersReloadSequence] = useState(0);
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
+  const [changingActionId, setChangingActionId] = useState<number | null>(null);
+  const [actionNotice, setActionNotice] = useState<{
+    tone: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const detailRequestSequence = useRef(0);
   const feedbackRequestSequence = useRef(0);
   const feedbackPage = feedbackPagination.issueId === issueId ? feedbackPagination.page : 0;
+  const canLoadUsers = user !== null && canManageIssue(user);
 
   useEffect(() => {
     if (issueId === null) return;
@@ -110,6 +138,33 @@ export function IssueDetailPage() {
       });
   }, [feedbackPage, feedbackReloadSequence, issueId]);
 
+  useEffect(() => {
+    if (!canLoadUsers) return;
+    let active = true;
+
+    void organizationUsersRequest()
+      .then((organizationUsers) => {
+        if (active) {
+          setUsers(organizationUsers);
+          setUsersError(null);
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setUsersError(
+            error instanceof ApiError ? error.message : '조직 구성원을 불러올 수 없습니다.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setUsersLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [canLoadUsers, usersReloadSequence]);
+
   function retryDetail() {
     setDetailState(null);
     setDetailReloadSequence((current) => current + 1);
@@ -123,6 +178,63 @@ export function IssueDetailPage() {
   function changeFeedbackPage(nextPage: number) {
     setFeedbackState(null);
     setFeedbackPagination({ issueId, page: nextPage });
+  }
+
+  function retryUsers() {
+    setUsersLoading(true);
+    setUsersError(null);
+    setUsersReloadSequence((current) => current + 1);
+  }
+
+  function updateIssue(updatedIssue: IssueDetail) {
+    setDetailState({ issueId: updatedIssue.id, status: 'success', data: updatedIssue });
+  }
+
+  const closeActionDialog = useCallback(() => setActionDialogOpen(false), []);
+
+  function handleActionCreated(action: IssueAction) {
+    setDetailState((current) => {
+      if (current?.status !== 'success' || current.issueId !== action.issueId) return current;
+      return {
+        ...current,
+        data: { ...current.data, actions: [action, ...current.data.actions] },
+      };
+    });
+    setActionDialogOpen(false);
+    setActionNotice({ tone: 'success', message: '조치를 등록했습니다.' });
+  }
+
+  async function changeActionStatus(action: IssueAction, status: IssueAction['status']) {
+    setChangingActionId(action.id);
+    setActionNotice(null);
+    try {
+      const updatedAction = await changeActionStatusRequest(action.id, status);
+      setDetailState((current) => {
+        if (current?.status !== 'success' || current.issueId !== updatedAction.issueId) {
+          return current;
+        }
+        return {
+          ...current,
+          data: {
+            ...current.data,
+            actions: current.data.actions.map((item) =>
+              item.id === updatedAction.id ? updatedAction : item,
+            ),
+          },
+        };
+      });
+      setActionNotice({
+        tone: 'success',
+        message: `조치 상태를 변경했습니다. 현재 상태: ${actionStatusLabel(updatedAction.status)}`,
+      });
+    } catch (error) {
+      setActionNotice({
+        tone: 'error',
+        message: error instanceof ApiError ? error.message : '조치 상태를 변경할 수 없습니다.',
+      });
+    } finally {
+      setChangingActionId(null);
+    }
   }
 
   if (issueId === null) {
@@ -145,6 +257,8 @@ export function IssueDetailPage() {
       />
     );
   }
+
+  if (user === null) return null;
 
   const issue = currentDetailState.data;
   const unresolvedActionCount = issue.actions.filter(
@@ -201,21 +315,60 @@ export function IssueDetailPage() {
         </dl>
       </section>
 
+      <IssueManagementPanel
+        issue={issue}
+        user={user}
+        users={users}
+        usersLoading={usersLoading}
+        usersError={usersError}
+        onRetryUsers={retryUsers}
+        onIssueUpdated={updateIssue}
+      />
+
       <section className="issue-detail-section" aria-labelledby="issue-actions-title">
         <header className="issue-section-header">
           <div>
             <h2 id="issue-actions-title">조치</h2>
             <span>문제 해결을 위해 등록된 작업</span>
           </div>
-          <strong>{formatNumber(issue.actions.length)}건</strong>
+          <div className="issue-section-actions">
+            <strong>{formatNumber(issue.actions.length)}건</strong>
+            {canManageIssue(user) && issue.status !== 'CLOSED' && (
+              <button
+                className="secondary-button issue-add-action"
+                type="button"
+                onClick={() => {
+                  setActionNotice(null);
+                  setActionDialogOpen(true);
+                }}
+              >
+                <Plus size={16} aria-hidden="true" />
+                <span>조치 등록</span>
+              </button>
+            )}
+          </div>
         </header>
+        {actionNotice !== null && (
+          <div
+            className={`issue-operation-notice issue-operation-notice--${actionNotice.tone}`}
+            role="status"
+          >
+            {actionNotice.tone === 'error' && <AlertCircle size={18} aria-hidden="true" />}
+            <span>{actionNotice.message}</span>
+          </div>
+        )}
         {issue.actions.length === 0 ? (
           <IssueSectionEmpty
             icon={<ClipboardCheck size={24} aria-hidden="true" />}
             message="등록된 조치가 없습니다."
           />
         ) : (
-          <ActionTable actions={issue.actions} />
+          <ActionTable
+            actions={issue.actions}
+            user={user}
+            changingActionId={changingActionId}
+            onStatusChange={changeActionStatus}
+          />
         )}
       </section>
 
@@ -305,6 +458,15 @@ export function IssueDetailPage() {
             </footer>
           )}
       </section>
+
+      {actionDialogOpen && (
+        <ActionCreateDialog
+          issueId={issue.id}
+          users={users}
+          onClose={closeActionDialog}
+          onCreated={handleActionCreated}
+        />
+      )}
     </div>
   );
 }
@@ -341,10 +503,24 @@ function MetadataItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ActionTable({ actions }: { actions: IssueAction[] }) {
+function ActionTable({
+  actions,
+  user,
+  changingActionId,
+  onStatusChange,
+}: {
+  actions: IssueAction[];
+  user: UserProfile;
+  changingActionId: number | null;
+  onStatusChange: (action: IssueAction, status: IssueAction['status']) => Promise<void>;
+}) {
+  const showControls = actions.some(
+    (action) => canChangeActionStatus(user, action) && nextActionStatuses(action.status).length > 0,
+  );
+
   return (
     <div className="issue-action-table-wrap">
-      <table className="issue-action-table">
+      <table className={`issue-action-table${showControls ? ' issue-action-table--managed' : ''}`}>
         <caption className="sr-only">이슈 조치 목록</caption>
         <thead>
           <tr>
@@ -352,6 +528,7 @@ function ActionTable({ actions }: { actions: IssueAction[] }) {
             <th scope="col">조치</th>
             <th scope="col">담당자</th>
             <th scope="col">마감일</th>
+            {showControls && <th scope="col">관리</th>}
           </tr>
         </thead>
         <tbody>
@@ -370,6 +547,27 @@ function ActionTable({ actions }: { actions: IssueAction[] }) {
               </td>
               <td data-label="담당자">{action.assigneeName ?? '미지정'}</td>
               <td data-label="마감일">{formatDateOnly(action.dueDate)}</td>
+              {showControls && (
+                <td data-label="관리">
+                  {canChangeActionStatus(user, action) &&
+                  nextActionStatuses(action.status).length > 0 ? (
+                    <div className="issue-action-controls">
+                      {nextActionStatuses(action.status).map((status) => (
+                        <button
+                          type="button"
+                          key={status}
+                          onClick={() => void onStatusChange(action, status)}
+                          disabled={changingActionId !== null}
+                        >
+                          {actionTransitionLabel(status)}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="issue-action-unavailable">-</span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

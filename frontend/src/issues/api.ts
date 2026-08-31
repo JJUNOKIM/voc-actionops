@@ -1,6 +1,15 @@
 import type { PageResponse } from '../datasets/types';
 import { apiRequest } from '../lib/api-client';
-import type { IssueDetail, IssueFeedback, IssueQuery, IssueSummary } from './types';
+import type {
+  ActionStatus,
+  CreateIssueActionRequest,
+  IssueAction,
+  IssueDetail,
+  IssueFeedback,
+  IssueQuery,
+  IssueStatus,
+  IssueSummary,
+} from './types';
 
 export function issuesRequest(query: IssueQuery): Promise<PageResponse<IssueSummary>> {
   const params = new URLSearchParams({
@@ -33,4 +42,41 @@ export function issueFeedbacksRequest(
     size: String(size),
   });
   return apiRequest(`/api/v1/issues/${issueId}/feedbacks?${params.toString()}`);
+}
+
+export function assignIssueRequest(issueId: number, assigneeId: number): Promise<IssueDetail> {
+  return apiRequest(`/api/v1/issues/${issueId}/assignee`, {
+    method: 'PATCH',
+    body: JSON.stringify({ assigneeId }),
+  });
+}
+
+export function changeIssueStatusRequest(
+  issueId: number,
+  status: IssueStatus,
+): Promise<IssueDetail> {
+  return apiRequest(`/api/v1/issues/${issueId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function createIssueActionRequest(
+  issueId: number,
+  request: CreateIssueActionRequest,
+): Promise<IssueAction> {
+  return apiRequest(`/api/v1/issues/${issueId}/actions`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function changeActionStatusRequest(
+  actionId: number,
+  status: ActionStatus,
+): Promise<IssueAction> {
+  return apiRequest(`/api/v1/actions/${actionId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
 }
