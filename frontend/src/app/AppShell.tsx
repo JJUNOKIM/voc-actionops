@@ -1,4 +1,5 @@
 import {
+  CircleDotDashed,
   Database,
   LayoutDashboard,
   LogOut,
@@ -148,6 +149,10 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         <NavLink className="nav-item" to="/feedbacks" onClick={onNavigate}>
           <MessageSquareText size={19} aria-hidden="true" />
           <span>피드백</span>
+        </NavLink>
+        <NavLink className="nav-item" to="/issues" onClick={onNavigate}>
+          <CircleDotDashed size={19} aria-hidden="true" />
+          <span>이슈</span>
         </NavLink>
       </nav>
 

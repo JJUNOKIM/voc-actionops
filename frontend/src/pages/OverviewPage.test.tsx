@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OverviewPage } from './OverviewPage';
@@ -60,12 +61,15 @@ describe('OverviewPage', () => {
   });
 
   it('renders operational metrics, priority issues, and category breakdown', async () => {
-    render(<OverviewPage />);
+    renderOverviewPage();
 
     expect(await screen.findByText('128')).toBeInTheDocument();
     expect(screen.getByText('42.5%')).toBeInTheDocument();
     expect(screen.getByText('36.5시간')).toBeInTheDocument();
-    expect(screen.getByText('쿠폰 적용 후 결제 실패')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '쿠폰 적용 후 결제 실패' })).toHaveAttribute(
+      'href',
+      '/issues/7',
+    );
     expect(screen.getByText('처리 중')).toBeInTheDocument();
     expect(screen.getAllByText('PAYMENT')).toHaveLength(2);
     expect(screen.getByText('부정 72.5%')).toBeInTheDocument();
@@ -75,7 +79,7 @@ describe('OverviewPage', () => {
     const user = userEvent.setup();
     dashboardMocks.dashboardOverviewRequest.mockRejectedValueOnce(new Error('network'));
 
-    render(<OverviewPage />);
+    renderOverviewPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       '운영 현황을 불러오지 못했습니다.',
@@ -86,3 +90,11 @@ describe('OverviewPage', () => {
     expect(await screen.findByText('쿠폰 적용 후 결제 실패')).toBeInTheDocument();
   });
 });
+
+function renderOverviewPage() {
+  return render(
+    <MemoryRouter>
+      <OverviewPage />
+    </MemoryRouter>,
+  );
+}

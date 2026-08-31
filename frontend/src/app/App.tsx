@@ -5,6 +5,8 @@ import { DatasetDetailPage } from '../pages/DatasetDetailPage';
 import { DatasetsPage } from '../pages/DatasetsPage';
 import { FeedbackDetailPage } from '../pages/FeedbackDetailPage';
 import { FeedbacksPage } from '../pages/FeedbacksPage';
+import { IssueDetailPage } from '../pages/IssueDetailPage';
+import { IssuesPage } from '../pages/IssuesPage';
 import { OverviewPage } from '../pages/OverviewPage';
 import { LoginPage } from '../auth/LoginPage';
 import { useAuth } from '../auth/useAuth';
@@ -20,6 +22,8 @@ export function App() {
           <Route path="datasets/:datasetId" element={<DatasetDetailPage />} />
           <Route path="feedbacks" element={<FeedbacksPage />} />
           <Route path="feedbacks/:feedbackId" element={<FeedbackDetailPage />} />
+          <Route path="issues" element={<IssuesPage />} />
+          <Route path="issues/:issueId" element={<IssueDetailPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
