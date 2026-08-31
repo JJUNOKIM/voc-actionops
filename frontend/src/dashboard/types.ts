@@ -1,13 +1,4 @@
-export type IssuePriority = 'P0' | 'P1' | 'P2' | 'P3';
-
-export type IssueStatus =
-  | 'NEW'
-  | 'TRIAGED'
-  | 'ASSIGNED'
-  | 'IN_PROGRESS'
-  | 'RESOLVED'
-  | 'MONITORING'
-  | 'CLOSED';
+import type { IssuePriority, IssueStatus } from '../issues/types';
 
 export interface DashboardSummary {
   totalFeedbackCount: number;

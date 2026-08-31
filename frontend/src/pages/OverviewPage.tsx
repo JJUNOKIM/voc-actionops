@@ -1,5 +1,6 @@
 import { AlertCircle, BarChart3, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
 import { dashboardOverviewRequest } from '../dashboard/api';
@@ -196,7 +197,7 @@ function TopIssuesSection({ issues }: { issues: TopIssue[] }) {
                   </td>
                   <td data-label="이슈">
                     <div className="dashboard-issue-copy">
-                      <strong>{issue.title}</strong>
+                      <Link to={`/issues/${issue.issueId}`}>{issue.title}</Link>
                       <span>{issue.category}</span>
                     </div>
                   </td>

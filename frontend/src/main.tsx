@@ -10,6 +10,7 @@ import './styles/dataset-detail.css';
 import './styles/analysis-progress.css';
 import './styles/feedbacks.css';
 import './styles/dashboard.css';
+import './styles/issues.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
