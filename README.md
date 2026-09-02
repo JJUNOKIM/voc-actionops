@@ -1,8 +1,8 @@
 # VOC ActionOps
 
-고객 리뷰, 문의, 설문 데이터를 반복 이슈로 구조화하고 우선순위 산정, 담당자 액션 관리, 해결 후 지표 추적까지 연결하는 AI 기반 고객 피드백 운영 플랫폼입니다.
+고객 리뷰, 문의, 설문처럼 여러 채널에 흩어진 VOC를 한곳에 모아 분석하고, 반복되는 문제를 실제 처리 이슈와 액션으로 연결하는 프로젝트입니다.
 
-단순 감성 분석 대시보드가 아니라, 흩어진 고객 피드백이 실제 개선 작업으로 이어지도록 만드는 운영 흐름을 구현하는 것이 목표입니다.
+데이터 업로드와 검증부터 AI 분석, 담당자 조치, 해결 후 변화 확인까지 운영자가 사용하는 전체 흐름을 다룹니다.
 
 ## 핵심 흐름
 
@@ -17,16 +17,16 @@ flowchart LR
     C --> H[사용자 검수 및 수정 이력]
 ```
 
-## 설계 방향
+## 주요 설계
 
-- 원문 `Feedback`과 운영 단위 `Issue`를 분리한 도메인 설계
-- AI 결과의 신뢰도, 원문 근거, 사용자 수정 이력을 남기는 Human-in-the-loop 구조
-- 피드백 빈도, 부정 비율, 평균 긴급도를 반영하는 설명 가능한 우선순위 모델
-- 조직 단위 데이터 격리와 역할 기반 권한 제어
-- 영속화된 분석 작업, 항목별 재시도, 재시작 복구를 포함한 비동기 AI 분석
-- 이슈 해결 전후 변화와 최근 증가율을 확인하는 일별 지표 스냅샷
+- 수집한 원문은 `Feedback`에 보존하고, 여러 피드백에서 반복되는 문제는 `Issue`로 분리해 관리합니다.
+- AI 분석 결과는 사용자가 검수하고 수정할 수 있으며, 변경 전후 값과 수정 사유를 이력으로 남깁니다.
+- 이슈 우선순위는 피드백 빈도, 부정 비율, 평균 긴급도를 기준으로 계산합니다.
+- 주요 데이터 조회와 변경은 조직 범위로 제한하고, `ADMIN`, `PM`, `CS`, `VIEWER` 역할에 따라 권한을 구분합니다.
+- 분석 작업 상태를 데이터베이스에 저장해 항목별 재시도와 서버 재시작 후 복구를 지원합니다.
+- 일별 지표 스냅샷으로 이슈 해결 전후의 피드백 변화와 최근 증가율을 확인합니다.
 
-## 기술 구성
+## 기술 스택
 
 ### Backend
 
@@ -49,13 +49,13 @@ flowchart LR
 - OpenAI Responses API Structured Outputs
 - pytest
 
-### Data & Infrastructure
+### 데이터 및 실행 환경
 
 - MySQL 8.4
 - Docker Compose
 - GitHub Actions
 
-### Test & API Documentation
+### 테스트 및 API 문서
 
 - JUnit 5, H2
 - Spring Security Test, MockMvc
@@ -73,7 +73,7 @@ flowchart LR
 |-- docs/                    요구사항, 도메인, ERD, API 문서
 |-- docker-compose.yml       전체 로컬 실행 환경
 |-- .env.example             로컬 환경 변수 예시
-`-- .github/workflows/       백엔드 및 AI Worker CI
+`-- .github/workflows/       백엔드, 프론트엔드, AI Worker CI
 ```
 
 ## 로컬 실행
@@ -85,7 +85,7 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-MySQL이 준비되면 Flyway가 스키마를 적용하고, 백엔드는 데모 조직과 ADMIN 사용자를 한 번만 생성합니다. 로컬 데모 초기화는 `DEMO_DATA_ENABLED`로 끌 수 있습니다.
+컨테이너가 실행되면 Flyway가 MySQL 스키마를 적용하고, 백엔드가 데모 조직과 ADMIN 사용자를 생성합니다. 데모 데이터가 필요하지 않으면 `.env`에서 `DEMO_DATA_ENABLED=false`로 설정합니다.
 
 데모 계정:
 
@@ -101,7 +101,7 @@ MySQL이 준비되면 Flyway가 스키마를 적용하고, 백엔드는 데모 �
 - AI Worker Health Check: `http://localhost:8000/health`
 - AI Worker API 문서: `http://localhost:8000/docs`
 
-Swagger에서 로그인한 뒤 access token을 Authorize에 입력하면 `samples/demo-feedbacks.csv`로 업로드와 분석 흐름을 확인할 수 있습니다. CSV 컬럼은 API 시스템 필드명과 같으므로 `columnMapping`에는 각 헤더를 같은 이름으로 매핑하면 됩니다.
+Swagger UI에서 `/api/v1/auth/login`으로 로그인한 뒤 발급된 `accessToken`을 Authorize에 입력하면 API를 직접 호출할 수 있습니다. `samples/demo-feedbacks.csv`를 업로드할 때는 다음과 같이 CSV 헤더를 시스템 필드에 매핑합니다.
 
 ```json
 {
