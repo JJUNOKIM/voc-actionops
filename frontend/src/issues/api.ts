@@ -2,9 +2,13 @@ import type { PageResponse } from '../datasets/types';
 import { apiRequest } from '../lib/api-client';
 import type {
   ActionStatus,
+  ConfirmIssueDraftRequest,
   CreateIssueActionRequest,
+  FeedbackIssue,
   IssueAction,
+  IssueCandidate,
   IssueDetail,
+  IssueDraft,
   IssueFeedback,
   IssueQuery,
   IssueStatus,
@@ -42,6 +46,42 @@ export function issueFeedbacksRequest(
     size: String(size),
   });
   return apiRequest(`/api/v1/issues/${issueId}/feedbacks?${params.toString()}`);
+}
+
+export function feedbackIssuesRequest(feedbackId: number): Promise<FeedbackIssue[]> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issues`);
+}
+
+export function issueCandidatesRequest(
+  feedbackId: number,
+  limit = 3,
+): Promise<IssueCandidate[]> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-candidates?limit=${limit}`);
+}
+
+export function confirmIssueCandidateRequest(
+  feedbackId: number,
+  issueId: number,
+  representative: boolean,
+): Promise<IssueFeedback> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-candidates/${issueId}/confirm`, {
+    method: 'POST',
+    body: JSON.stringify({ representative }),
+  });
+}
+
+export function issueDraftRequest(feedbackId: number): Promise<IssueDraft> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-draft`);
+}
+
+export function confirmIssueDraftRequest(
+  feedbackId: number,
+  request: ConfirmIssueDraftRequest,
+): Promise<IssueDetail> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-draft/confirm`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
 }
 
 export function assignIssueRequest(issueId: number, assigneeId: number): Promise<IssueDetail> {

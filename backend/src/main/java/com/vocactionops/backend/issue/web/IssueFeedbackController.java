@@ -9,6 +9,7 @@ import com.vocactionops.backend.issue.application.IssueCandidateService.IssueCan
 import com.vocactionops.backend.issue.application.IssueDraftService;
 import com.vocactionops.backend.issue.application.IssueDraftService.IssueDraftView;
 import com.vocactionops.backend.issue.application.IssueService;
+import com.vocactionops.backend.issue.application.IssueService.FeedbackIssueView;
 import com.vocactionops.backend.issue.application.IssueService.IssueDetail;
 import com.vocactionops.backend.issue.application.IssueService.IssueFeedbackView;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -112,6 +113,14 @@ public class IssueFeedbackController {
 				request.issueId(),
 				request.representative()
 		), "피드백이 이슈에 연결되었습니다.");
+	}
+
+	@GetMapping("/feedbacks/{feedbackId}/issues")
+	public ApiResponse<List<FeedbackIssueView>> feedbackIssues(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId
+	) {
+		return ApiResponse.success(issueService.getFeedbackIssues(authenticatedUser, feedbackId));
 	}
 
 	@GetMapping("/issues/{issueId}/feedbacks")

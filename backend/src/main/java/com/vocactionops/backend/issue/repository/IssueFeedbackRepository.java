@@ -58,6 +58,20 @@ public interface IssueFeedbackRepository extends JpaRepository<IssueFeedback, Lo
 			@Param("organizationId") Long organizationId
 	);
 
+	@Query("""
+			SELECT link
+			FROM IssueFeedback link
+			JOIN FETCH link.issue issue
+			LEFT JOIN FETCH issue.assignee
+			WHERE link.feedback.id = :feedbackId
+			  AND link.feedback.organization.id = :organizationId
+			ORDER BY link.createdAt DESC, link.id DESC
+			""")
+	List<IssueFeedback> findAllByFeedbackAndOrganization(
+			@Param("feedbackId") Long feedbackId,
+			@Param("organizationId") Long organizationId
+	);
+
 	@Query(
 			value = """
 					SELECT link

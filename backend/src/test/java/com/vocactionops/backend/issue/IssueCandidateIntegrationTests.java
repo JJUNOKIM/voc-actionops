@@ -227,10 +227,34 @@ class IssueCandidateIntegrationTests {
 				.andExpect(jsonPath("$.data.priority").value("P1"))
 				.andExpect(jsonPath("$.data.priorityScore").value(68.0));
 
+		mockMvc.perform(get(
+					"/api/v1/feedbacks/{feedbackId}/issues",
+					analyzedFeedback.getId()
+			)
+				.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data[0].issueId").value(issue.getId()))
+				.andExpect(jsonPath("$.data[0].title").value("Coupon payment failure"))
+				.andExpect(jsonPath("$.data[0].status").value("NEW"))
+				.andExpect(jsonPath("$.data[0].assigneeId").value(pm.getId()))
+				.andExpect(jsonPath("$.data[0].similarityScore").value(candidateScore.doubleValue()))
+				.andExpect(jsonPath("$.data[0].representative").value(true))
+				.andExpect(jsonPath("$.data[0].linkedBy").value("AI"));
+
 		mockMvc.perform(get("/api/v1/feedbacks/{feedbackId}/issue-candidates", analyzedFeedback.getId())
 						.header("Authorization", bearer(viewer)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data").isEmpty());
+	}
+
+	@Test
+	void rejectsFeedbackIssueLookupAcrossOrganizations() throws Exception {
+		mockMvc.perform(get(
+					"/api/v1/feedbacks/{feedbackId}/issues",
+					analyzedFeedback.getId()
+			)
+				.header("Authorization", bearer(otherAdmin)))
+				.andExpect(status().isNotFound());
 	}
 
 	@Test

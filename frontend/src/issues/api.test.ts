@@ -4,8 +4,13 @@ import {
   assignIssueRequest,
   changeActionStatusRequest,
   changeIssueStatusRequest,
+  confirmIssueCandidateRequest,
+  confirmIssueDraftRequest,
   createIssueActionRequest,
+  feedbackIssuesRequest,
   issueDetailRequest,
+  issueCandidatesRequest,
+  issueDraftRequest,
   issueFeedbacksRequest,
   issuesRequest,
 } from './api';
@@ -49,6 +54,46 @@ describe('issue API', () => {
     expect(apiRequestMock).toHaveBeenNthCalledWith(
       2,
       '/api/v1/issues/7/feedbacks?representativeOnly=true&page=2&size=10',
+    );
+  });
+
+  it('requests and confirms the feedback issue workflow', async () => {
+    apiRequestMock.mockResolvedValue({});
+
+    await feedbackIssuesRequest(31);
+    await issueCandidatesRequest(31);
+    await confirmIssueCandidateRequest(31, 7, true);
+    await issueDraftRequest(31);
+    await confirmIssueDraftRequest(31, {
+      analysisVersion: 2,
+      title: '쿠폰 결제 실패',
+      description: '쿠폰 적용 시 결제가 완료되지 않는다.',
+      assigneeId: 3,
+    });
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, '/api/v1/feedbacks/31/issues');
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/v1/feedbacks/31/issue-candidates?limit=3',
+    );
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      3,
+      '/api/v1/feedbacks/31/issue-candidates/7/confirm',
+      { method: 'POST', body: JSON.stringify({ representative: true }) },
+    );
+    expect(apiRequestMock).toHaveBeenNthCalledWith(4, '/api/v1/feedbacks/31/issue-draft');
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      5,
+      '/api/v1/feedbacks/31/issue-draft/confirm',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          analysisVersion: 2,
+          title: '쿠폰 결제 실패',
+          description: '쿠폰 적용 시 결제가 완료되지 않는다.',
+          assigneeId: 3,
+        }),
+      },
     );
   });
 

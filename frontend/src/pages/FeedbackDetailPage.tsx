@@ -24,6 +24,7 @@ import {
   sentimentTone,
 } from '../feedbacks/labels';
 import type { FeedbackAnalysisDetail, FeedbackDetail } from '../feedbacks/types';
+import { FeedbackIssueSection } from '../issues/FeedbackIssueSection';
 import { ApiError } from '../lib/api-client';
 
 type DetailState =
@@ -162,6 +163,13 @@ export function FeedbackDetailPage() {
           onAnalysisCorrected={handleAnalysisCorrected}
         />
       )}
+
+      <FeedbackIssueSection
+        feedbackId={feedback.id}
+        analysisStatus={feedback.analysis?.status ?? null}
+        analysisCategory={feedback.analysis?.category ?? null}
+        user={user}
+      />
     </div>
   );
 }

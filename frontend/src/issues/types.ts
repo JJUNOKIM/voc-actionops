@@ -1,4 +1,5 @@
 import type { SourceType } from '../datasets/types';
+import type { Sentiment } from '../feedbacks/types';
 
 export type IssuePriority = 'P0' | 'P1' | 'P2' | 'P3';
 
@@ -64,6 +65,57 @@ export interface IssueFeedback {
   linkedBy: IssueFeedbackLinkSource;
   feedbackCreatedAt: string | null;
   linkedAt: string;
+}
+
+export interface FeedbackIssue {
+  linkId: number;
+  issueId: number;
+  title: string;
+  category: string;
+  priority: IssuePriority;
+  status: IssueStatus;
+  assigneeId: number | null;
+  assigneeName: string | null;
+  similarityScore: number | null;
+  representative: boolean;
+  linkedBy: IssueFeedbackLinkSource;
+  linkedAt: string;
+}
+
+export interface IssueCandidateMatchSignals {
+  categoryMatched: boolean;
+  categoryScore: number;
+  characterSimilarity: number;
+  tokenSimilarity: number;
+  textSimilarity: number;
+}
+
+export interface IssueCandidate {
+  issueId: number;
+  title: string;
+  category: string;
+  priority: IssuePriority;
+  status: IssueStatus;
+  similarityScore: number;
+  matchSignals: IssueCandidateMatchSignals;
+}
+
+export interface IssueDraft {
+  feedbackId: number;
+  analysisVersion: number;
+  title: string;
+  description: string;
+  category: string;
+  sentiment: Sentiment;
+  urgencyScore: number;
+  confidenceScore: number;
+}
+
+export interface ConfirmIssueDraftRequest {
+  analysisVersion: number;
+  title: string;
+  description: string;
+  assigneeId?: number;
 }
 
 export interface IssueQuery {
