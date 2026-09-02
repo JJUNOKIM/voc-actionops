@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   Plus,
   RefreshCw,
+  Search,
   X,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -22,6 +23,7 @@ import {
 import { issueStatusLabel, issueStatusTone, priorityTone } from './format';
 import type { FeedbackIssue, IssueCandidate } from './types';
 import { IssueDraftDialog } from './IssueDraftDialog';
+import { IssueLinkDialog } from './IssueLinkDialog';
 
 type WorkflowState =
   | {
@@ -49,13 +51,14 @@ export function FeedbackIssueSection({
 }: FeedbackIssueSectionProps) {
   const analysisKey = `${analysisStatus ?? 'NONE'}:${analysisCategory ?? ''}`;
   const analysisReady = analysisStatus === 'SUCCESS';
-  const canConfirmCandidate =
+  const canLinkIssue =
     user?.role === 'ADMIN' || user?.role === 'PM' || user?.role === 'CS';
   const canCreateIssue = user?.role === 'ADMIN' || user?.role === 'PM';
   const [state, setState] = useState<WorkflowState>(null);
   const [reloadSequence, setReloadSequence] = useState(0);
   const [selectedCandidate, setSelectedCandidate] = useState<IssueCandidate | null>(null);
   const [draftDialogOpen, setDraftDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const requestSequence = useRef(0);
 
@@ -105,6 +108,12 @@ export function FeedbackIssueSection({
     reload();
   }
 
+  function handleIssueLinked() {
+    setLinkDialogOpen(false);
+    setNotice('기존 이슈를 직접 연결했습니다.');
+    reload();
+  }
+
   return (
     <section
       className="dataset-detail-section feedback-detail-section feedback-issue-section"
@@ -115,7 +124,20 @@ export function FeedbackIssueSection({
           <p className="section-label">ISSUE REVIEW</p>
           <h2 id="feedback-issue-title">이슈 처리</h2>
         </div>
-        <GitMerge size={19} aria-hidden="true" />
+        <div className="feedback-issue-section-actions">
+          {canLinkIssue && (
+            <button
+              className="secondary-button feedback-issue-link-button"
+              type="button"
+              onClick={() => setLinkDialogOpen(true)}
+              disabled={currentState?.status !== 'success'}
+            >
+              <Search size={16} aria-hidden="true" />
+              <span>기존 이슈 연결</span>
+            </button>
+          )}
+          {!canLinkIssue && <GitMerge size={19} aria-hidden="true" />}
+        </div>
       </header>
 
       {notice !== null && (
@@ -191,7 +213,7 @@ export function FeedbackIssueSection({
                 {currentState.candidates.map((candidate) => (
                   <CandidateRow
                     candidate={candidate}
-                    canConfirm={canConfirmCandidate}
+                    canConfirm={canLinkIssue}
                     key={candidate.issueId}
                     onSelect={() => setSelectedCandidate(candidate)}
                   />
@@ -240,6 +262,15 @@ export function FeedbackIssueSection({
           feedbackId={feedbackId}
           onClose={() => setDraftDialogOpen(false)}
           onCreated={handleIssueCreated}
+        />
+      )}
+
+      {linkDialogOpen && currentState?.status === 'success' && (
+        <IssueLinkDialog
+          feedbackId={feedbackId}
+          linkedIssueIds={currentState.links.map((issue) => issue.issueId)}
+          onClose={() => setLinkDialogOpen(false)}
+          onLinked={handleIssueLinked}
         />
       )}
     </section>

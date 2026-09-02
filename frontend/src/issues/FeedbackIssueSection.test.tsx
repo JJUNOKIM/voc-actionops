@@ -19,6 +19,20 @@ vi.mock('./IssueDraftDialog', () => ({
     <button type="button" onClick={onCreated}>초안 등록 완료</button>
   ),
 }));
+vi.mock('./IssueLinkDialog', () => ({
+  IssueLinkDialog: ({
+    linkedIssueIds,
+    onLinked,
+  }: {
+    linkedIssueIds: number[];
+    onLinked: () => void;
+  }) => (
+    <div>
+      <span>연결된 이슈 번호: {linkedIssueIds.join(', ')}</span>
+      <button type="button" onClick={onLinked}>기존 이슈 연결 완료</button>
+    </div>
+  ),
+}));
 
 const admin: UserProfile = {
   id: 1,
@@ -102,6 +116,24 @@ describe('FeedbackIssueSection', () => {
 
     expect(await screen.findByText('쿠폰 적용 후 결제 실패')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '연결 검토' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '기존 이슈 연결' })).not.toBeInTheDocument();
+  });
+
+  it('opens the manual link flow and reloads linked issues after completion', async () => {
+    const user = userEvent.setup();
+    workflowMocks.feedbackIssuesRequest
+      .mockResolvedValueOnce([linkedIssue])
+      .mockResolvedValueOnce([linkedIssue, { ...linkedIssue, linkId: 22, issueId: 8 }]);
+    workflowMocks.issueCandidatesRequest.mockResolvedValue([]);
+
+    renderSection({ ...admin, role: 'CS' });
+
+    await user.click(await screen.findByRole('button', { name: '기존 이슈 연결' }));
+    expect(screen.getByText('연결된 이슈 번호: 7')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '기존 이슈 연결 완료' }));
+
+    expect(await screen.findByText('기존 이슈를 직접 연결했습니다.')).toBeInTheDocument();
+    expect(workflowMocks.feedbackIssuesRequest).toHaveBeenCalledTimes(2);
   });
 
   it('waits for a completed analysis before requesting candidates', async () => {
