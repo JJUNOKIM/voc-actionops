@@ -8,6 +8,7 @@ import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.common.response.PageResponse;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.feedback.domain.Feedback;
+import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.issue.domain.Issue;
 import com.vocactionops.backend.issue.domain.IssueFeedback;
 import com.vocactionops.backend.issue.domain.IssueStatus;
@@ -38,6 +39,7 @@ public class IssueService {
 
 	private final OrganizationRepository organizationRepository;
 	private final UserRepository userRepository;
+	private final FeedbackRepository feedbackRepository;
 	private final IssueRepository issueRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final ActionRepository actionRepository;
@@ -46,6 +48,7 @@ public class IssueService {
 	public IssueService(
 			OrganizationRepository organizationRepository,
 			UserRepository userRepository,
+			FeedbackRepository feedbackRepository,
 			IssueRepository issueRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
 			ActionRepository actionRepository,
@@ -53,6 +56,7 @@ public class IssueService {
 	) {
 		this.organizationRepository = organizationRepository;
 		this.userRepository = userRepository;
+		this.feedbackRepository = feedbackRepository;
 		this.issueRepository = issueRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.actionRepository = actionRepository;
@@ -194,6 +198,20 @@ public class IssueService {
 		).map(IssueFeedbackView::from));
 	}
 
+	public List<FeedbackIssueView> getFeedbackIssues(
+			AuthenticatedUser authenticatedUser,
+			Long feedbackId
+	) {
+		feedbackRepository.findByIdAndOrganizationId(feedbackId, authenticatedUser.organizationId())
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+		return issueFeedbackRepository.findAllByFeedbackAndOrganization(
+				feedbackId,
+				authenticatedUser.organizationId()
+		).stream()
+				.map(FeedbackIssueView::from)
+				.toList();
+	}
+
 	private Issue getIssueEntity(AuthenticatedUser authenticatedUser, Long issueId) {
 		return issueRepository.findByIdAndOrganizationId(issueId, authenticatedUser.organizationId())
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -296,6 +314,40 @@ public class IssueService {
 					link.isRepresentative(),
 					link.getLinkedBy(),
 					feedback.getFeedbackCreatedAt(),
+					link.getCreatedAt()
+			);
+		}
+	}
+
+	public record FeedbackIssueView(
+			Long linkId,
+			Long issueId,
+			String title,
+			String category,
+			Priority priority,
+			IssueStatus status,
+			Long assigneeId,
+			String assigneeName,
+			BigDecimal similarityScore,
+			boolean representative,
+			LinkSource linkedBy,
+			LocalDateTime linkedAt
+	) {
+		static FeedbackIssueView from(IssueFeedback link) {
+			Issue issue = link.getIssue();
+			User assignee = issue.getAssignee();
+			return new FeedbackIssueView(
+					link.getId(),
+					issue.getId(),
+					issue.getTitle(),
+					issue.getCategory(),
+					issue.getPriority(),
+					issue.getStatus(),
+					assignee == null ? null : assignee.getId(),
+					assignee == null ? null : assignee.getName(),
+					link.getSimilarityScore(),
+					link.isRepresentative(),
+					link.getLinkedBy(),
 					link.getCreatedAt()
 			);
 		}

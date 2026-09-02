@@ -17,6 +17,9 @@ vi.mock('../auth/useAuth', () => ({ useAuth: detailMocks.useAuth }));
 vi.mock('../feedbacks/FeedbackCorrectionSection', () => ({
   FeedbackCorrectionSection: () => <div data-testid="correction-section" />,
 }));
+vi.mock('../issues/FeedbackIssueSection', () => ({
+  FeedbackIssueSection: () => <div data-testid="feedback-issue-section" />,
+}));
 
 const detail: FeedbackDetail = {
   id: 31,
@@ -64,6 +67,7 @@ describe('FeedbackDetailPage', () => {
     expect(screen.getByText('65.0%')).toBeInTheDocument();
     expect(screen.getByText(/신뢰도가 70% 미만입니다/)).toBeInTheDocument();
     expect(screen.getByTestId('correction-section')).toBeInTheDocument();
+    expect(screen.getByTestId('feedback-issue-section')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '피드백 목록' })).toHaveAttribute(
       'href',
       '/feedbacks?datasetId=17',
