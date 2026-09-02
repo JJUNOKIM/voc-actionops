@@ -70,6 +70,17 @@ export function confirmIssueCandidateRequest(
   });
 }
 
+export function linkFeedbackToIssueRequest(
+  feedbackId: number,
+  issueId: number,
+  representative: boolean,
+): Promise<IssueFeedback> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-links`, {
+    method: 'POST',
+    body: JSON.stringify({ issueId, representative }),
+  });
+}
+
 export function issueDraftRequest(feedbackId: number): Promise<IssueDraft> {
   return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-draft`);
 }

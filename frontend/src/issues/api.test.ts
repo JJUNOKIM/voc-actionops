@@ -13,6 +13,7 @@ import {
   issueDraftRequest,
   issueFeedbacksRequest,
   issuesRequest,
+  linkFeedbackToIssueRequest,
 } from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
@@ -63,6 +64,7 @@ describe('issue API', () => {
     await feedbackIssuesRequest(31);
     await issueCandidatesRequest(31);
     await confirmIssueCandidateRequest(31, 7, true);
+    await linkFeedbackToIssueRequest(31, 8, false);
     await issueDraftRequest(31);
     await confirmIssueDraftRequest(31, {
       analysisVersion: 2,
@@ -81,9 +83,14 @@ describe('issue API', () => {
       '/api/v1/feedbacks/31/issue-candidates/7/confirm',
       { method: 'POST', body: JSON.stringify({ representative: true }) },
     );
-    expect(apiRequestMock).toHaveBeenNthCalledWith(4, '/api/v1/feedbacks/31/issue-draft');
     expect(apiRequestMock).toHaveBeenNthCalledWith(
-      5,
+      4,
+      '/api/v1/feedbacks/31/issue-links',
+      { method: 'POST', body: JSON.stringify({ issueId: 8, representative: false }) },
+    );
+    expect(apiRequestMock).toHaveBeenNthCalledWith(5, '/api/v1/feedbacks/31/issue-draft');
+    expect(apiRequestMock).toHaveBeenNthCalledWith(
+      6,
       '/api/v1/feedbacks/31/issue-draft/confirm',
       {
         method: 'POST',
