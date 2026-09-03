@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,6 +122,7 @@ public class IssueMetricsSnapshotService {
 				issue.getCategory(),
 				issue.getStatus(),
 				issue.getResolvedAt(),
+				resolutionDate(issue.getResolvedAt(), ZoneId.systemDefault()),
 				dateRange.from(),
 				dateRange.to(),
 				latestGrowthRate(points),
@@ -130,6 +132,13 @@ public class IssueMetricsSnapshotService {
 
 	public LocalDate currentDate() {
 		return LocalDate.now(clock.withZone(SNAPSHOT_ZONE));
+	}
+
+	static LocalDate resolutionDate(LocalDateTime resolvedAt, ZoneId applicationZone) {
+		// Issue records resolvedAt with the application's local clock.
+		return resolvedAt == null ? null : resolvedAt.atZone(applicationZone)
+				.withZoneSameInstant(SNAPSHOT_ZONE)
+				.toLocalDate();
 	}
 
 	private static IssueMetricPoint toPoint(IssueMetricsSnapshot snapshot) {

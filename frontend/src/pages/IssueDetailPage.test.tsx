@@ -15,11 +15,13 @@ const detailMocks = vi.hoisted(() => ({
   changeActionStatusRequest: vi.fn(),
   organizationUsersRequest: vi.fn(),
   useAuth: vi.fn(),
+  issueTrendRequest: vi.fn(),
 }));
 
 vi.mock('../issues/api', () => detailMocks);
 vi.mock('../users/api', () => ({ organizationUsersRequest: detailMocks.organizationUsersRequest }));
 vi.mock('../auth/useAuth', () => ({ useAuth: detailMocks.useAuth }));
+vi.mock('../dashboard/api', () => ({ issueTrendRequest: detailMocks.issueTrendRequest }));
 
 const admin: UserProfile = {
   id: 1,
@@ -101,6 +103,10 @@ describe('IssueDetailPage', () => {
       { id: 3, email: 'developer@example.com', name: '김개발', role: 'DEVELOPER' },
     ]);
     detailMocks.useAuth.mockReturnValue({ user: admin });
+    detailMocks.issueTrendRequest.mockReset().mockResolvedValue({
+      issueId: 7, from: '2026-08-01', to: '2026-08-30', resolvedAt: null, resolvedDate: null,
+      feedbackGrowthRate: null, points: [],
+    });
   });
 
   it('renders issue context, actions, and related feedback links', async () => {
@@ -122,6 +128,7 @@ describe('IssueDetailPage', () => {
     expect(await screen.findByRole('heading', { name: '이슈 관리' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '해결로 변경' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '조치 등록' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '피드백 추이' })).toBeInTheDocument();
   });
 
   it('hides mutation controls from a viewer', async () => {
@@ -134,6 +141,16 @@ describe('IssueDetailPage', () => {
     expect(screen.queryByRole('button', { name: '조치 등록' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '완료' })).not.toBeInTheDocument();
     expect(detailMocks.organizationUsersRequest).not.toHaveBeenCalled();
+    expect(detailMocks.issueTrendRequest).toHaveBeenCalledWith(7, undefined);
+  });
+
+  it('does not request restricted dashboard metrics for a developer', async () => {
+    detailMocks.useAuth.mockReturnValue({ user: { ...admin, id: 3, role: 'DEVELOPER' } });
+    renderIssueDetailPage('/issues/7');
+    await screen.findByRole('heading', { name: '쿠폰 적용 후 결제 실패' });
+    expect(screen.queryByRole('heading', { name: '피드백 추이' })).not.toBeInTheDocument();
+    expect(detailMocks.issueTrendRequest).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: '해결로 변경' })).toBeInTheDocument();
   });
 
   it('moves through related feedback pages', async () => {

@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
+import { IssueTrendSection } from '../dashboard/IssueTrendSection';
 import { formatDate, formatNumber } from '../datasets/format';
 import type { PageResponse } from '../datasets/types';
 import { sourceTypeLabel } from '../datasets/labels';
@@ -371,6 +372,10 @@ export function IssueDetailPage() {
           />
         )}
       </section>
+
+      {user.role !== 'DEVELOPER' && (
+        <IssueTrendSection key={issue.id} issueId={issue.id} resolvedAt={issue.resolvedAt} />
+      )}
 
       <section className="issue-detail-section" aria-labelledby="issue-feedback-title">
         <header className="issue-section-header">

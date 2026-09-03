@@ -38,3 +38,32 @@ export interface DashboardOverview {
   categories: CategoryBreakdownItem[];
   topIssues: TopIssue[];
 }
+
+export interface IssueMetricPoint {
+  snapshotDate: string;
+  feedbackCount: number;
+  analyzedFeedbackCount: number;
+  negativeFeedbackRate: number;
+  averageSentimentScore: number | null;
+  averageUrgencyScore: number | null;
+  priorityScore: number | null;
+  unresolvedActionCount: number;
+}
+
+export interface IssueTrend {
+  issueId: number;
+  title: string;
+  category: string;
+  status: IssueStatus;
+  resolvedAt: string | null;
+  resolvedDate: string | null;
+  from: string;
+  to: string;
+  feedbackGrowthRate: number | null;
+  points: IssueMetricPoint[];
+}
+
+export interface IssueTrendRange {
+  from: string;
+  to: string;
+}
