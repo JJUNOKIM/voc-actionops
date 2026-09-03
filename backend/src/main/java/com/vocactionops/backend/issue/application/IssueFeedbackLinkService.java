@@ -64,4 +64,40 @@ public class IssueFeedbackLinkService {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
 	}
+
+	@Transactional
+	public IssueFeedback changeRepresentative(
+			Long organizationId,
+			Long feedbackId,
+			Long issueId,
+			boolean representative
+	) {
+		IssueFeedback link = getLinkForUpdate(organizationId, feedbackId, issueId);
+		link.changeRepresentative(representative);
+		return link;
+	}
+
+	@Transactional
+	public void unlink(Long organizationId, Long feedbackId, Long issueId) {
+		IssueFeedback link = getLinkForUpdate(organizationId, feedbackId, issueId);
+		Issue issue = link.getIssue();
+		issueFeedbackRepository.delete(link);
+		// Aggregate queries must see the remaining links in the same transaction.
+		issueFeedbackRepository.flush();
+		IssueFeedbackRepository.FeedbackPeriod period = issueFeedbackRepository.getFeedbackPeriod(
+				issueId, organizationId
+		);
+		issue.updateFeedbackPeriod(period.getFirstSeenAt(), period.getLastSeenAt());
+		issue.clearCalculatedPriority();
+		priorityScoringService.recalculate(organizationId, issueId);
+	}
+
+	private IssueFeedback getLinkForUpdate(Long organizationId, Long feedbackId, Long issueId) {
+		feedbackRepository.findByIdAndOrganizationIdForUpdate(feedbackId, organizationId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+		issueRepository.findByIdAndOrganizationIdForUpdate(issueId, organizationId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+		return issueFeedbackRepository.findByIssueIdAndFeedbackId(issueId, feedbackId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+	}
 }

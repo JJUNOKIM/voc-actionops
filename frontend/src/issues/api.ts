@@ -85,6 +85,23 @@ export function issueDraftRequest(feedbackId: number): Promise<IssueDraft> {
   return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-draft`);
 }
 
+export function changeFeedbackRepresentativeRequest(
+  feedbackId: number,
+  issueId: number,
+  representative: boolean,
+): Promise<IssueFeedback> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-links/${issueId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ representative }),
+  });
+}
+
+export function unlinkFeedbackRequest(feedbackId: number, issueId: number): Promise<void> {
+  return apiRequest(`/api/v1/feedbacks/${feedbackId}/issue-links/${issueId}`, {
+    method: 'DELETE',
+  });
+}
+
 export function confirmIssueDraftRequest(
   feedbackId: number,
   request: ConfirmIssueDraftRequest,

@@ -8,11 +8,32 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface IssueFeedbackRepository extends JpaRepository<IssueFeedback, Long> {
 
 	boolean existsByIssueIdAndFeedbackId(Long issueId, Long feedbackId);
+
+	Optional<IssueFeedback> findByIssueIdAndFeedbackId(Long issueId, Long feedbackId);
+
+	@Query("""
+			SELECT MIN(COALESCE(link.feedback.feedbackCreatedAt, link.feedback.ingestedAt)) AS firstSeenAt,
+			       MAX(COALESCE(link.feedback.feedbackCreatedAt, link.feedback.ingestedAt)) AS lastSeenAt
+			FROM IssueFeedback link
+			WHERE link.issue.id = :issueId
+			  AND link.issue.organization.id = :organizationId
+			""")
+	FeedbackPeriod getFeedbackPeriod(
+			@Param("issueId") Long issueId,
+			@Param("organizationId") Long organizationId
+	);
+
+	interface FeedbackPeriod {
+		LocalDateTime getFirstSeenAt();
+		LocalDateTime getLastSeenAt();
+	}
 
 	boolean existsByFeedbackId(Long feedbackId);
 

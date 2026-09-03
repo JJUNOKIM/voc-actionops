@@ -182,6 +182,25 @@ public class IssueService {
 		));
 	}
 
+	@Transactional
+	@PreAuthorize("hasAnyRole('ADMIN', 'PM', 'CS')")
+	public IssueFeedbackView changeFeedbackRepresentative(
+			AuthenticatedUser authenticatedUser,
+			Long feedbackId,
+			Long issueId,
+			boolean representative
+	) {
+		return IssueFeedbackView.from(issueFeedbackLinkService.changeRepresentative(
+				authenticatedUser.organizationId(), feedbackId, issueId, representative
+		));
+	}
+
+	@Transactional
+	@PreAuthorize("hasAnyRole('ADMIN', 'PM', 'CS')")
+	public void unlinkFeedback(AuthenticatedUser authenticatedUser, Long feedbackId, Long issueId) {
+		issueFeedbackLinkService.unlink(authenticatedUser.organizationId(), feedbackId, issueId);
+	}
+
 	public PageResponse<IssueFeedbackView> getIssueFeedbacks(
 			AuthenticatedUser authenticatedUser,
 			Long issueId,

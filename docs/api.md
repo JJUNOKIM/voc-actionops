@@ -874,6 +874,36 @@ AI가 잘못 묶었거나, 아직 이슈에 연결되지 않은 피드백을 사
 
 ---
 
+### 6.4.1 대표 피드백 지정 변경
+
+```http
+PATCH /api/v1/feedbacks/{feedbackId}/issue-links/{issueId}
+```
+
+```json
+{
+  "representative": true
+}
+```
+
+`representative`는 필수이며 `false`로 보내면 대표 지정을 해제한다. 연결 ID, 연결 시각, `linkedBy`, 유사도는 유지한다. 성공 시 변경된 피드백 연결 정보를 반환한다.
+
+### 6.4.2 피드백 이슈 연결 해제
+
+```http
+DELETE /api/v1/feedbacks/{feedbackId}/issue-links/{issueId}
+```
+
+연결만 삭제하며 원문, 이슈, 액션과 과거 일별 스냅샷은 유지한다. 남은 피드백을 기준으로 이슈의 최초·최근 발생 시각과 우선순위 점수를 다시 계산한다. 작성 시각이 없는 피드백은 수집 시각을 사용한다.
+
+- 연결이 하나도 남지 않으면 최초·최근 발생 시각은 `null`이다.
+- 분석 완료 피드백이 남지 않으면 `priorityScore`는 `null`로 비우고 기존 `priority` 등급은 유지한다.
+- 성공 시 HTTP 200과 `data: null`을 반환한다. 같은 연결을 다시 해제하면 HTTP 404를 반환한다.
+
+두 API 모두 `ADMIN`, `PM`, `CS`만 호출할 수 있다. 다른 조직의 피드백·이슈나 존재하지 않는 연결에는 HTTP 404를 반환한다.
+
+---
+
 ### 6.5 기존 이슈 후보 조회
 
 ```http

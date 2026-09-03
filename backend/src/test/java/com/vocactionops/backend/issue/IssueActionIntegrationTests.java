@@ -31,10 +31,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -199,6 +201,138 @@ class IssueActionIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.totalElements").value(1))
 				.andExpect(jsonPath("$.data.content[*].externalId", contains("review-001")));
+	}
+
+	@Test
+	void changesRepresentativeWithoutRecreatingTheLink() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		String body = linkFeedback(csUser, feedback.getId(), issueId, false)
+				.andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+		JsonNode originalLink = objectMapper.readTree(body).path("data");
+
+		for (User user : new User[]{admin, pm, csUser}) {
+			changeRepresentative(user, feedback.getId(), issueId, true)
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.data.id").value(originalLink.path("id").asLong()))
+					.andExpect(jsonPath("$.data.linkedAt").value(originalLink.path("linkedAt").asText()))
+					.andExpect(jsonPath("$.data.linkedBy").value("MANUAL"))
+					.andExpect(jsonPath("$.data.representative").value(true));
+		}
+		mockMvc.perform(get("/api/v1/issues/{issueId}/feedbacks", issueId)
+						.queryParam("representativeOnly", "true")
+						.header("Authorization", bearer(viewer)))
+				.andExpect(jsonPath("$.data.totalElements").value(1));
+		changeRepresentative(csUser, feedback.getId(), issueId, false)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.representative").value(false));
+		mockMvc.perform(get("/api/v1/issues/{issueId}/feedbacks", issueId)
+						.queryParam("representativeOnly", "true")
+						.header("Authorization", bearer(viewer)))
+				.andExpect(jsonPath("$.data.totalElements").value(0));
+	}
+
+	@Test
+	void recalculatesPeriodAndPriorityAfterUnlinkAndKeepsIssueAndAction() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		linkFeedback(csUser, feedback.getId(), issueId, true).andExpect(status().isOk());
+		linkFeedback(csUser, secondFeedback.getId(), issueId, false).andExpect(status().isOk());
+		mockMvc.perform(post("/api/v1/issues/{issueId}/actions", issueId)
+						.header("Authorization", bearer(pm))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(json(Map.of("title", "Check payment logs"))))
+				.andExpect(status().isOk());
+
+		unlinkFeedback(csUser, secondFeedback.getId(), issueId).andExpect(status().isOk());
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.feedbackCount").value(1))
+				.andExpect(jsonPath("$.data.negativeCount").value(1))
+				.andExpect(jsonPath("$.data.priorityScore").value(68.0))
+				.andExpect(jsonPath("$.data.firstSeenAt").value("2026-07-01T12:00:00"))
+				.andExpect(jsonPath("$.data.lastSeenAt").value("2026-07-01T12:00:00"));
+
+		unlinkFeedback(pm, feedback.getId(), issueId).andExpect(status().isOk());
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.feedbackCount").value(0))
+				.andExpect(jsonPath("$.data.negativeCount").value(0))
+				.andExpect(jsonPath("$.data.firstSeenAt").isEmpty())
+				.andExpect(jsonPath("$.data.lastSeenAt").isEmpty())
+				.andExpect(jsonPath("$.data.priorityScore").isEmpty())
+				.andExpect(jsonPath("$.data.priority").value("P1"))
+				.andExpect(jsonPath("$.data.actions.length()").value(1));
+		mockMvc.perform(get("/api/v1/feedbacks/{feedbackId}", feedback.getId())
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk());
+		mockMvc.perform(get("/api/v1/feedbacks/{feedbackId}/issues", feedback.getId())
+						.header("Authorization", bearer(viewer)))
+				.andExpect(jsonPath("$.data").isEmpty());
+		unlinkFeedback(admin, feedback.getId(), issueId).andExpect(status().isNotFound());
+		linkFeedback(admin, feedback.getId(), issueId, false).andExpect(status().isOk());
+	}
+
+	@Test
+	void clearsCalculatedScoreWhenOnlyUnanalyzedFeedbackRemains() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		linkFeedback(csUser, feedback.getId(), issueId, false).andExpect(status().isOk());
+		linkFeedback(csUser, secondFeedback.getId(), issueId, false).andExpect(status().isOk());
+
+		unlinkFeedback(admin, feedback.getId(), issueId).andExpect(status().isOk());
+		mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.feedbackCount").value(1))
+				.andExpect(jsonPath("$.data.negativeCount").value(0))
+				.andExpect(jsonPath("$.data.firstSeenAt").value("2026-07-03T09:30:00"))
+				.andExpect(jsonPath("$.data.lastSeenAt").value("2026-07-03T09:30:00"))
+				.andExpect(jsonPath("$.data.priorityScore").isEmpty())
+				.andExpect(jsonPath("$.data.priority").value("P1"));
+	}
+
+	@Test
+	void usesIngestedAtWhenRemainingFeedbackHasNoCreatedAt() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		Feedback undatedFeedback = feedbackRepository.save(feedback(
+				organization, feedback.getDataset(), "undated-001", "Payment failed again.", null
+		));
+		linkFeedback(csUser, feedback.getId(), issueId, false).andExpect(status().isOk());
+		linkFeedback(csUser, undatedFeedback.getId(), issueId, false).andExpect(status().isOk());
+		unlinkFeedback(csUser, feedback.getId(), issueId).andExpect(status().isOk());
+
+		String body = mockMvc.perform(get("/api/v1/issues/{issueId}", issueId)
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+		JsonNode data = objectMapper.readTree(body).path("data");
+		LocalDateTime ingestedAt = feedbackRepository.findById(undatedFeedback.getId()).orElseThrow().getIngestedAt();
+		assertThat(LocalDateTime.parse(data.path("firstSeenAt").asText())).isEqualTo(ingestedAt);
+		assertThat(LocalDateTime.parse(data.path("lastSeenAt").asText())).isEqualTo(ingestedAt);
+	}
+
+	@Test
+	void rejectsUnauthorizedAndCrossOrganizationLinkChanges() throws Exception {
+		long issueId = createIssue(pm, developer.getId());
+		long otherIssueId = createIssue(otherAdmin, otherOrganizationDeveloper.getId());
+		linkFeedback(csUser, feedback.getId(), issueId, true).andExpect(status().isOk());
+
+		for (User user : new User[]{viewer, developer}) {
+			changeRepresentative(user, feedback.getId(), issueId, false).andExpect(status().isForbidden());
+			unlinkFeedback(user, feedback.getId(), issueId).andExpect(status().isForbidden());
+		}
+		changeRepresentative(otherAdmin, feedback.getId(), issueId, false).andExpect(status().isNotFound());
+		unlinkFeedback(otherAdmin, feedback.getId(), issueId).andExpect(status().isNotFound());
+		changeRepresentative(admin, feedback.getId(), otherIssueId, false).andExpect(status().isNotFound());
+		unlinkFeedback(admin, feedback.getId(), otherIssueId).andExpect(status().isNotFound());
+		changeRepresentative(admin, secondFeedback.getId(), issueId, true).andExpect(status().isNotFound());
+		unlinkFeedback(admin, secondFeedback.getId(), issueId).andExpect(status().isNotFound());
+		mockMvc.perform(patch("/api/v1/feedbacks/{feedbackId}/issue-links/{issueId}", feedback.getId(), issueId)
+						.header("Authorization", bearer(admin))
+						.contentType(MediaType.APPLICATION_JSON).content("{}"))
+				.andExpect(status().isBadRequest());
+		mockMvc.perform(get("/api/v1/feedbacks/{feedbackId}/issues", feedback.getId())
+						.header("Authorization", bearer(viewer)))
+				.andExpect(jsonPath("$.data[0].representative").value(true));
 	}
 
 	@Test
@@ -436,6 +570,22 @@ class IssueActionIntegrationTests {
 						"issueId", issueId,
 						"representative", representative
 				))));
+	}
+
+	private org.springframework.test.web.servlet.ResultActions changeRepresentative(
+			User user, Long feedbackId, long issueId, boolean representative
+	) throws Exception {
+		return mockMvc.perform(patch("/api/v1/feedbacks/{feedbackId}/issue-links/{issueId}", feedbackId, issueId)
+				.header("Authorization", bearer(user))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json(Map.of("representative", representative))));
+	}
+
+	private org.springframework.test.web.servlet.ResultActions unlinkFeedback(
+			User user, Long feedbackId, long issueId
+	) throws Exception {
+		return mockMvc.perform(delete("/api/v1/feedbacks/{feedbackId}/issue-links/{issueId}", feedbackId, issueId)
+				.header("Authorization", bearer(user)));
 	}
 
 	private org.springframework.test.web.servlet.ResultActions changeIssueStatus(

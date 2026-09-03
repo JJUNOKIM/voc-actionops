@@ -11,6 +11,8 @@ const workflowMocks = vi.hoisted(() => ({
   confirmIssueCandidateRequest: vi.fn(),
   feedbackIssuesRequest: vi.fn(),
   issueCandidatesRequest: vi.fn(),
+  changeFeedbackRepresentativeRequest: vi.fn(),
+  unlinkFeedbackRequest: vi.fn(),
 }));
 
 vi.mock('./api', () => workflowMocks);
@@ -79,6 +81,8 @@ describe('FeedbackIssueSection', () => {
     workflowMocks.confirmIssueCandidateRequest.mockReset();
     workflowMocks.feedbackIssuesRequest.mockReset();
     workflowMocks.issueCandidatesRequest.mockReset();
+    workflowMocks.changeFeedbackRepresentativeRequest.mockReset();
+    workflowMocks.unlinkFeedbackRequest.mockReset();
   });
 
   it('confirms a candidate and reloads the persisted link', async () => {
@@ -109,7 +113,7 @@ describe('FeedbackIssueSection', () => {
   });
 
   it('keeps recommendation data read-only for a viewer', async () => {
-    workflowMocks.feedbackIssuesRequest.mockResolvedValue([]);
+    workflowMocks.feedbackIssuesRequest.mockResolvedValue([{ ...linkedIssue, title: '이미 확인한 이슈' }]);
     workflowMocks.issueCandidatesRequest.mockResolvedValue([candidate]);
 
     renderSection({ ...admin, role: 'VIEWER' });
@@ -117,6 +121,24 @@ describe('FeedbackIssueSection', () => {
     expect(await screen.findByText('쿠폰 적용 후 결제 실패')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '연결 검토' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '기존 이슈 연결' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '이슈 연결 해제' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '대표 피드백 지정 해제' })).not.toBeInTheDocument();
+  });
+
+  it('reloads the workflow after unlinking an issue', async () => {
+    const user = userEvent.setup();
+    workflowMocks.feedbackIssuesRequest.mockResolvedValueOnce([linkedIssue]).mockResolvedValueOnce([]);
+    workflowMocks.issueCandidatesRequest.mockResolvedValue([]);
+    workflowMocks.unlinkFeedbackRequest.mockResolvedValue(undefined);
+
+    renderSection(admin);
+    await user.click(await screen.findByRole('button', { name: '이슈 연결 해제' }));
+    await user.click(screen.getByRole('button', { name: '연결 해제' }));
+
+    expect(workflowMocks.unlinkFeedbackRequest).toHaveBeenCalledWith(31, 7);
+    expect(await screen.findByText('이슈 연결을 해제했습니다.')).toBeInTheDocument();
+    expect(await screen.findByText('유사한 기존 이슈가 없습니다.')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: linkedIssue.title })).not.toBeInTheDocument();
   });
 
   it('opens the manual link flow and reloads linked issues after completion', async () => {
