@@ -99,6 +99,10 @@ public class IssueFeedback {
 		return representative;
 	}
 
+	public void changeRepresentative(boolean representative) {
+		this.representative = representative;
+	}
+
 	public LinkSource getLinkedBy() {
 		return linkedBy;
 	}

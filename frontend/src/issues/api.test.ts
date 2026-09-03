@@ -4,6 +4,7 @@ import {
   assignIssueRequest,
   changeActionStatusRequest,
   changeIssueStatusRequest,
+  changeFeedbackRepresentativeRequest,
   confirmIssueCandidateRequest,
   confirmIssueDraftRequest,
   createIssueActionRequest,
@@ -14,6 +15,7 @@ import {
   issueFeedbacksRequest,
   issuesRequest,
   linkFeedbackToIssueRequest,
+  unlinkFeedbackRequest,
 } from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
@@ -102,6 +104,21 @@ describe('issue API', () => {
         }),
       },
     );
+  });
+
+  it('updates and removes a feedback issue link', async () => {
+    apiRequestMock.mockResolvedValue({});
+
+    await changeFeedbackRepresentativeRequest(31, 7, false);
+    await unlinkFeedbackRequest(31, 7);
+
+    expect(apiRequestMock).toHaveBeenNthCalledWith(1, '/api/v1/feedbacks/31/issue-links/7', {
+      method: 'PATCH',
+      body: JSON.stringify({ representative: false }),
+    });
+    expect(apiRequestMock).toHaveBeenNthCalledWith(2, '/api/v1/feedbacks/31/issue-links/7', {
+      method: 'DELETE',
+    });
   });
 
   it('sends issue and action mutations to their dedicated endpoints', async () => {

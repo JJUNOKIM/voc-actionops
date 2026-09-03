@@ -24,6 +24,7 @@ import { issueStatusLabel, issueStatusTone, priorityTone } from './format';
 import type { FeedbackIssue, IssueCandidate } from './types';
 import { IssueDraftDialog } from './IssueDraftDialog';
 import { IssueLinkDialog } from './IssueLinkDialog';
+import { IssueLinkActions } from './IssueLinkActions';
 
 type WorkflowState =
   | {
@@ -59,7 +60,7 @@ export function FeedbackIssueSection({
   const [selectedCandidate, setSelectedCandidate] = useState<IssueCandidate | null>(null);
   const [draftDialogOpen, setDraftDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ message: string; status: 'success' | 'error' } | null>(null);
   const requestSequence = useRef(0);
 
   useEffect(() => {
@@ -98,20 +99,29 @@ export function FeedbackIssueSection({
 
   function handleCandidateConfirmed() {
     setSelectedCandidate(null);
-    setNotice('추천 이슈 연결을 확정했습니다.');
+    setNotice({ message: '추천 이슈 연결을 확정했습니다.', status: 'success' });
     reload();
   }
 
   function handleIssueCreated() {
     setDraftDialogOpen(false);
-    setNotice('새 이슈를 만들고 대표 피드백으로 연결했습니다.');
+    setNotice({ message: '새 이슈를 만들고 대표 피드백으로 연결했습니다.', status: 'success' });
     reload();
   }
 
   function handleIssueLinked() {
     setLinkDialogOpen(false);
-    setNotice('기존 이슈를 직접 연결했습니다.');
+    setNotice({ message: '기존 이슈를 직접 연결했습니다.', status: 'success' });
     reload();
+  }
+
+  function handleLinkChanged(message: string) {
+    setNotice({ message, status: 'success' });
+    reload();
+  }
+
+  function handleLinkError(message: string) {
+    setNotice({ message, status: 'error' });
   }
 
   return (
@@ -119,7 +129,7 @@ export function FeedbackIssueSection({
       className="dataset-detail-section feedback-detail-section feedback-issue-section"
       aria-labelledby="feedback-issue-title"
     >
-      <header className="detail-section-header feedback-detail-section-header">
+      <header className="detail-section-header feedback-detail-section-header feedback-issue-section-header">
         <div>
           <p className="section-label">ISSUE REVIEW</p>
           <h2 id="feedback-issue-title">이슈 처리</h2>
@@ -141,8 +151,11 @@ export function FeedbackIssueSection({
       </header>
 
       {notice !== null && (
-        <div className="issue-workflow-notice" role="status">
-          <span>{notice}</span>
+        <div
+          className={`issue-workflow-notice issue-workflow-notice--${notice.status}`}
+          role={notice.status === 'error' ? 'alert' : 'status'}
+        >
+          <span>{notice.message}</span>
           <button
             className="icon-button"
             type="button"
@@ -186,7 +199,14 @@ export function FeedbackIssueSection({
               </div>
               <div className="feedback-issue-list">
                 {currentState.links.map((issue) => (
-                  <LinkedIssueRow issue={issue} key={issue.linkId} />
+                  <LinkedIssueRow
+                    issue={issue}
+                    key={issue.linkId}
+                    feedbackId={feedbackId}
+                    canManage={canLinkIssue}
+                    onChanged={handleLinkChanged}
+                    onError={handleLinkError}
+                  />
                 ))}
               </div>
             </div>
@@ -277,7 +297,19 @@ export function FeedbackIssueSection({
   );
 }
 
-function LinkedIssueRow({ issue }: { issue: FeedbackIssue }) {
+function LinkedIssueRow({
+  issue,
+  feedbackId,
+  canManage,
+  onChanged,
+  onError,
+}: {
+  issue: FeedbackIssue;
+  feedbackId: number;
+  canManage: boolean;
+  onChanged: (message: string) => void;
+  onError: (message: string) => void;
+}) {
   return (
     <article className="feedback-issue-row">
       <div className="feedback-issue-main">
@@ -296,9 +328,19 @@ function LinkedIssueRow({ issue }: { issue: FeedbackIssue }) {
         </span>
         {issue.representative && <span className="representative-label">대표 피드백</span>}
       </div>
-      <div className="feedback-link-source">
-        <Link2 size={15} aria-hidden="true" />
-        <span>{issue.linkedBy === 'AI' ? '추천 확정' : '직접 연결'}</span>
+      <div className="feedback-link-controls">
+        <div className="feedback-link-source">
+          <Link2 size={15} aria-hidden="true" />
+          <span>{issue.linkedBy === 'AI' ? '추천 확정' : '직접 연결'}</span>
+        </div>
+        {canManage && (
+          <IssueLinkActions
+            feedbackId={feedbackId}
+            issue={issue}
+            onChanged={onChanged}
+            onError={onError}
+          />
+        )}
       </div>
     </article>
   );

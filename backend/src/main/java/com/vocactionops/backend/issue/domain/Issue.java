@@ -128,6 +128,19 @@ public class Issue extends BaseTimeEntity {
 		this.priority = expectedPriority;
 	}
 
+	public void clearCalculatedPriority() {
+		priorityScore = null;
+	}
+
+	public void updateFeedbackPeriod(LocalDateTime firstSeenAt, LocalDateTime lastSeenAt) {
+		if ((firstSeenAt == null) != (lastSeenAt == null)
+				|| (firstSeenAt != null && firstSeenAt.isAfter(lastSeenAt))) {
+			throw new IllegalArgumentException("feedback period is invalid");
+		}
+		this.firstSeenAt = firstSeenAt;
+		this.lastSeenAt = lastSeenAt;
+	}
+
 	void registerFeedback(Feedback feedback) {
 		Feedback linkedFeedback = Objects.requireNonNull(feedback, "feedback must not be null");
 		validateOrganization(organization, linkedFeedback.getOrganization());

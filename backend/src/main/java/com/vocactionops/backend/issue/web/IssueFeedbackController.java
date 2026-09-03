@@ -21,6 +21,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -115,6 +117,28 @@ public class IssueFeedbackController {
 		), "피드백이 이슈에 연결되었습니다.");
 	}
 
+	@PatchMapping("/feedbacks/{feedbackId}/issue-links/{issueId}")
+	public ApiResponse<IssueFeedbackView> changeRepresentative(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId,
+			@PathVariable Long issueId,
+			@Valid @RequestBody ChangeRepresentativeRequest request
+	) {
+		return ApiResponse.success(issueService.changeFeedbackRepresentative(
+				authenticatedUser, feedbackId, issueId, request.representative()
+		), "대표 피드백 지정이 변경되었습니다.");
+	}
+
+	@DeleteMapping("/feedbacks/{feedbackId}/issue-links/{issueId}")
+	public ApiResponse<Void> unlinkFeedback(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@PathVariable Long feedbackId,
+			@PathVariable Long issueId
+	) {
+		issueService.unlinkFeedback(authenticatedUser, feedbackId, issueId);
+		return ApiResponse.success(null, "이슈 연결이 해제되었습니다.");
+	}
+
 	@GetMapping("/feedbacks/{feedbackId}/issues")
 	public ApiResponse<List<FeedbackIssueView>> feedbackIssues(
 			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
@@ -147,6 +171,9 @@ public class IssueFeedbackController {
 	}
 
 	public record ConfirmCandidateRequest(boolean representative) {
+	}
+
+	public record ChangeRepresentativeRequest(@NotNull Boolean representative) {
 	}
 
 	public record ConfirmIssueDraftRequest(
