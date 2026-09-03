@@ -13,6 +13,7 @@ public record IssueTrendView(
 		String category,
 		IssueStatus status,
 		LocalDateTime resolvedAt,
+		LocalDate resolvedDate,
 		LocalDate from,
 		LocalDate to,
 		BigDecimal feedbackGrowthRate,

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { dashboardOverviewRequest } from './api';
+import { dashboardOverviewRequest, issueTrendRequest } from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
 
@@ -9,6 +9,20 @@ vi.mock('../lib/api-client', () => ({ apiRequest: apiRequestMock }));
 describe('dashboard API', () => {
   beforeEach(() => {
     apiRequestMock.mockReset();
+  });
+
+  it('uses the server default trend period when no range is supplied', async () => {
+    apiRequestMock.mockResolvedValue({ issueId: 7, points: [] });
+    await issueTrendRequest(7);
+    expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/dashboard/issue-trends?issueId=7');
+  });
+
+  it('requests an explicit inclusive trend period', async () => {
+    apiRequestMock.mockResolvedValue({ issueId: 7, points: [] });
+    await issueTrendRequest(7, { from: '2026-08-01', to: '2026-09-03' });
+    expect(apiRequestMock).toHaveBeenCalledWith(
+      '/api/v1/dashboard/issue-trends?issueId=7&from=2026-08-01&to=2026-09-03',
+    );
   });
 
   it('requests the summary, category breakdown, and priority issues together', async () => {

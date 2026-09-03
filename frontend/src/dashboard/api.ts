@@ -3,10 +3,21 @@ import type {
   CategoryBreakdownItem,
   DashboardOverview,
   DashboardSummary,
+  IssueTrend,
+  IssueTrendRange,
   TopIssue,
 } from './types';
 
 const TOP_ISSUE_LIMIT = 6;
+
+export function issueTrendRequest(issueId: number, range?: IssueTrendRange): Promise<IssueTrend> {
+  const parameters = new URLSearchParams({ issueId: String(issueId) });
+  if (range !== undefined) {
+    parameters.set('from', range.from);
+    parameters.set('to', range.to);
+  }
+  return apiRequest(`/api/v1/dashboard/issue-trends?${parameters.toString()}`);
+}
 
 export function dashboardSummaryRequest(): Promise<DashboardSummary> {
   return apiRequest('/api/v1/dashboard/summary');

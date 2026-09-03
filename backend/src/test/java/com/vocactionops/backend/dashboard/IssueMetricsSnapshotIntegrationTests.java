@@ -18,6 +18,7 @@ import com.vocactionops.backend.feedback.domain.Feedback;
 import com.vocactionops.backend.feedback.repository.FeedbackRepository;
 import com.vocactionops.backend.issue.application.IssueFeedbackLinkService;
 import com.vocactionops.backend.issue.domain.Issue;
+import com.vocactionops.backend.issue.domain.IssueStatus;
 import com.vocactionops.backend.issue.domain.LinkSource;
 import com.vocactionops.backend.issue.domain.Priority;
 import com.vocactionops.backend.issue.repository.IssueRepository;
@@ -38,6 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -191,6 +193,7 @@ class IssueMetricsSnapshotIntegrationTests {
 						.header("Authorization", bearer(viewer)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.data.issueId").value(issue.getId()))
+				.andExpect(jsonPath("$.data.resolvedDate").doesNotExist())
 				.andExpect(jsonPath("$.data.feedbackGrowthRate").value(33.33))
 				.andExpect(jsonPath("$.data.points.length()").value(2))
 				.andExpect(jsonPath("$.data.points[0].snapshotDate").value("2026-07-10"))
@@ -202,6 +205,25 @@ class IssueMetricsSnapshotIntegrationTests {
 				.andExpect(jsonPath("$.data.points[1].feedbackCount").value(4))
 				.andExpect(jsonPath("$.data.points[1].analyzedFeedbackCount").value(3))
 				.andExpect(jsonPath("$.data.points[1].negativeFeedbackRate").value(66.67));
+	}
+
+	@Test
+	void returnsResolutionDateInTheSnapshotTimeZone() throws Exception {
+		Issue issue = saveIssue(organization, pm, "Resolved payment failure");
+		issue.changeStatus(IssueStatus.TRIAGED);
+		issue.changeStatus(IssueStatus.ASSIGNED);
+		issue.changeStatus(IssueStatus.IN_PROGRESS);
+		issue.changeStatus(IssueStatus.RESOLVED);
+		issueRepository.saveAndFlush(issue);
+
+		String expectedDate = issue.getResolvedAt().atZone(ZoneId.systemDefault())
+				.withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+				.toLocalDate().toString();
+		mockMvc.perform(get("/api/v1/dashboard/issue-trends")
+						.queryParam("issueId", issue.getId().toString())
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.resolvedDate").value(expectedDate));
 	}
 
 	@Test
