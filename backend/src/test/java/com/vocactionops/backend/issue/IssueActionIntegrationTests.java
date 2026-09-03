@@ -206,9 +206,12 @@ class IssueActionIntegrationTests {
 	@Test
 	void changesRepresentativeWithoutRecreatingTheLink() throws Exception {
 		long issueId = createIssue(pm, developer.getId());
-		String body = linkFeedback(csUser, feedback.getId(), issueId, false)
+		linkFeedback(csUser, feedback.getId(), issueId, false).andExpect(status().isOk());
+		// Compare persisted timestamps, which may have lower precision than the creation response.
+		String body = mockMvc.perform(get("/api/v1/issues/{issueId}/feedbacks", issueId)
+						.header("Authorization", bearer(viewer)))
 				.andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-		JsonNode originalLink = objectMapper.readTree(body).path("data");
+		JsonNode originalLink = objectMapper.readTree(body).path("data").path("content").get(0);
 
 		for (User user : new User[]{admin, pm, csUser}) {
 			changeRepresentative(user, feedback.getId(), issueId, true)
