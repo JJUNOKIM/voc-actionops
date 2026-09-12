@@ -85,7 +85,7 @@ cp .env.example .env
 docker compose up --build -d
 ```
 
-컨테이너가 실행되면 Flyway가 MySQL 스키마를 적용하고, 백엔드가 데모 조직과 ADMIN 사용자를 생성합니다. 데모 데이터가 필요하지 않으면 `.env`에서 `DEMO_DATA_ENABLED=false`로 설정합니다.
+컨테이너가 실행되면 Flyway가 MySQL 스키마를 적용하고, 백엔드가 데모 계정과 주요 화면을 확인할 수 있는 예시 데이터를 생성합니다. 데모 데이터가 필요하지 않으면 `.env`에서 `DEMO_DATA_ENABLED=false`로 설정합니다.
 
 데모 계정:
 

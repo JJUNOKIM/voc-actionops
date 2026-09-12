@@ -16,30 +16,35 @@ public class DemoDataBootstrapService {
 	private final OrganizationRepository organizationRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final DemoScenarioSeedService scenarioSeedService;
 
 	public DemoDataBootstrapService(
 			DemoDataProperties properties,
 			OrganizationRepository organizationRepository,
 			UserRepository userRepository,
-			PasswordEncoder passwordEncoder
+			PasswordEncoder passwordEncoder,
+			DemoScenarioSeedService scenarioSeedService
 	) {
 		this.properties = properties;
 		this.organizationRepository = organizationRepository;
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.scenarioSeedService = scenarioSeedService;
 	}
 
 	@Transactional
 	public void initialize() {
 		String email = properties.userEmail().trim();
-		if (userRepository.existsByEmailIgnoreCase(email)) {
-			return;
-		}
+		User admin = userRepository.findByEmailIgnoreCase(email)
+				.orElseGet(() -> createAdmin(email));
+		scenarioSeedService.initialize(admin);
+	}
 
+	private User createAdmin(String email) {
 		Organization organization = organizationRepository.save(
 				new Organization(properties.organizationName().trim())
 		);
-		userRepository.save(new User(
+		return userRepository.save(new User(
 				organization,
 				email,
 				passwordEncoder.encode(properties.userPassword()),
