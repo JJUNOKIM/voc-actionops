@@ -108,12 +108,15 @@ public class IssueService {
 		}
 		LocalDateTime fromDate = from == null ? null : from.atStartOfDay();
 		LocalDateTime toDateExclusive = to == null ? null : to.plusDays(1).atStartOfDay();
+		Long visibleAssigneeId = authenticatedUser.role() == Role.DEVELOPER
+				? authenticatedUser.userId()
+				: assigneeId;
 		return PageResponse.from(issueRepository.findPageByOrganization(
 				authenticatedUser.organizationId(),
 				status,
 				priority,
 				normalizeFilter(category),
-				assigneeId,
+				visibleAssigneeId,
 				normalizeFilter(keyword),
 				fromDate,
 				toDateExclusive,
@@ -122,7 +125,7 @@ public class IssueService {
 	}
 
 	public IssueDetail getIssue(AuthenticatedUser authenticatedUser, Long issueId) {
-		return detail(getIssueEntity(authenticatedUser, issueId));
+		return detail(getVisibleIssueEntity(authenticatedUser, issueId));
 	}
 
 	@Transactional
@@ -208,7 +211,7 @@ public class IssueService {
 			int page,
 			int size
 	) {
-		getIssueEntity(authenticatedUser, issueId);
+		getVisibleIssueEntity(authenticatedUser, issueId);
 		return PageResponse.from(issueFeedbackRepository.findPageByIssueAndOrganization(
 				issueId,
 				authenticatedUser.organizationId(),
@@ -236,6 +239,14 @@ public class IssueService {
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 	}
 
+	private Issue getVisibleIssueEntity(AuthenticatedUser authenticatedUser, Long issueId) {
+		Issue issue = getIssueEntity(authenticatedUser, issueId);
+		if (authenticatedUser.role() == Role.DEVELOPER && !isAssignee(authenticatedUser, issue)) {
+			throw new CustomException(ErrorCode.NOT_FOUND);
+		}
+		return issue;
+	}
+
 	private User getUser(AuthenticatedUser authenticatedUser, Long userId) {
 		return userRepository.findByIdAndOrganizationId(userId, authenticatedUser.organizationId())
 				.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -245,6 +256,10 @@ public class IssueService {
 		if (authenticatedUser.role() == Role.ADMIN || authenticatedUser.role() == Role.PM) {
 			return true;
 		}
+		return isAssignee(authenticatedUser, issue);
+	}
+
+	private boolean isAssignee(AuthenticatedUser authenticatedUser, Issue issue) {
 		User assignee = issue.getAssignee();
 		return assignee != null && assignee.getId().equals(authenticatedUser.userId());
 	}

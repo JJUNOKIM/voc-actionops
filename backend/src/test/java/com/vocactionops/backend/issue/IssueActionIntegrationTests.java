@@ -204,6 +204,38 @@ class IssueActionIntegrationTests {
 	}
 
 	@Test
+	void limitsDeveloperQueriesToAssignedIssues() throws Exception {
+		long assignedIssueId = createIssue(pm, developer.getId());
+		long otherIssueId = createIssue(pm, otherDeveloper.getId());
+		createIssue(pm, null);
+
+		mockMvc.perform(get("/api/v1/issues")
+						.queryParam("assigneeId", otherDeveloper.getId().toString())
+						.header("Authorization", bearer(developer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.totalElements").value(1))
+				.andExpect(jsonPath("$.data.content[0].id").value(assignedIssueId));
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", assignedIssueId)
+						.header("Authorization", bearer(developer)))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}", otherIssueId)
+						.header("Authorization", bearer(developer)))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.NOT_FOUND.code()));
+
+		mockMvc.perform(get("/api/v1/issues/{issueId}/feedbacks", otherIssueId)
+						.header("Authorization", bearer(developer)))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(get("/api/v1/issues")
+						.header("Authorization", bearer(viewer)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.totalElements").value(3));
+	}
+
+	@Test
 	void changesRepresentativeWithoutRecreatingTheLink() throws Exception {
 		long issueId = createIssue(pm, developer.getId());
 		linkFeedback(csUser, feedback.getId(), issueId, false).andExpect(status().isOk());
