@@ -316,9 +316,28 @@ POST /api/v1/users
 }
 ```
 
+#### <Response>
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 3,
+    "email": "cs@example.com",
+    "name": "CS 사용자",
+    "role": "CS"
+  },
+  "message": "사용자가 생성되었습니다."
+}
+```
+
 #### <권한>
 
 * ADMIN
+
+#### <설명>
+
+생성된 사용자는 현재 관리자의 조직에 소속된다. 이메일은 전체 사용자에서 중복될 수 없으며 초기 비밀번호는 8자 이상 입력한다.
 
 ---
 

@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw, UsersRound } from 'lucide-react';
+import { AlertCircle, RefreshCw, UserPlus, UsersRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '../auth/useAuth';
@@ -9,6 +9,7 @@ import {
   organizationUsersRequest,
 } from '../users/api';
 import { roleLabel, roleOptions } from '../users/labels';
+import { UserCreateDialog } from '../users/UserCreateDialog';
 
 export function UsersPage() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export function UsersPage() {
   const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [reloadSequence, setReloadSequence] = useState(0);
   const requestSequence = useRef(0);
 
@@ -73,6 +75,13 @@ export function UsersPage() {
     }
   }
 
+  function addCreatedUser(createdUser: OrganizationUser) {
+    setUsers((current) => (current === null ? [createdUser] : [...current, createdUser]));
+    setErrorMessage(null);
+    setNotice(`${createdUser.name}님을 조직 사용자로 추가했습니다.`);
+    setCreateDialogOpen(false);
+  }
+
   const organizationUsers = users ?? [];
 
   return (
@@ -90,16 +99,27 @@ export function UsersPage() {
             <h2 id="user-list-title">조직 구성원</h2>
             <span>{users === null ? '조회 중' : `${organizationUsers.length}명`}</span>
           </div>
-          <button
-            className="icon-button"
-            type="button"
-            onClick={refreshUsers}
-            disabled={loading || updatingUserId !== null}
-            aria-label="사용자 목록 새로고침"
-            title="새로고침"
-          >
-            <RefreshCw className={loading ? 'spin' : undefined} size={18} />
-          </button>
+          <div className="user-toolbar-actions">
+            <button
+              className="primary-button user-create-button"
+              type="button"
+              onClick={() => setCreateDialogOpen(true)}
+              disabled={updatingUserId !== null}
+            >
+              <UserPlus size={16} aria-hidden="true" />
+              <span>사용자 추가</span>
+            </button>
+            <button
+              className="icon-button"
+              type="button"
+              onClick={refreshUsers}
+              disabled={loading || updatingUserId !== null}
+              aria-label="사용자 목록 새로고침"
+              title="새로고침"
+            >
+              <RefreshCw className={loading ? 'spin' : undefined} size={18} />
+            </button>
+          </div>
         </div>
 
         {notice !== null && (
@@ -196,6 +216,13 @@ export function UsersPage() {
           </div>
         )}
       </section>
+
+      {createDialogOpen && (
+        <UserCreateDialog
+          onClose={() => setCreateDialogOpen(false)}
+          onCreated={addCreatedUser}
+        />
+      )}
     </div>
   );
 }

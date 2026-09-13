@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { changeOrganizationUserRoleRequest, organizationUsersRequest } from './api';
+import {
+  changeOrganizationUserRoleRequest,
+  createOrganizationUserRequest,
+  organizationUsersRequest,
+} from './api';
 
 const apiRequestMock = vi.hoisted(() => vi.fn());
 
@@ -28,6 +32,23 @@ describe('user API', () => {
     expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/users/2/role', {
       method: 'PATCH',
       body: JSON.stringify({ role: 'DEVELOPER' }),
+    });
+  });
+
+  it('creates an organization user', async () => {
+    const request = {
+      email: 'cs@example.com',
+      password: 'Password123!',
+      name: 'CS User',
+      role: 'CS' as const,
+    };
+    apiRequestMock.mockResolvedValue({ id: 3, ...request });
+
+    await createOrganizationUserRequest(request);
+
+    expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/users', {
+      method: 'POST',
+      body: JSON.stringify(request),
     });
   });
 });
