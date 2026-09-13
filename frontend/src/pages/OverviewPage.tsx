@@ -9,7 +9,6 @@ import {
   formatPriorityScore,
   formatResolutionHours,
   issueStatusLabel,
-  priorityTone,
 } from '../dashboard/format';
 import type {
   CategoryBreakdownItem,
@@ -18,6 +17,7 @@ import type {
   TopIssue,
 } from '../dashboard/types';
 import { formatNumber } from '../datasets/format';
+import { PriorityBadge } from '../issues/PriorityBadge';
 import { ApiError } from '../lib/api-client';
 
 export function OverviewPage() {
@@ -187,11 +187,7 @@ function TopIssuesSection({ issues }: { issues: TopIssue[] }) {
                 <tr key={issue.issueId}>
                   <td data-label="우선순위">
                     <div className="dashboard-priority-cell">
-                      <span
-                        className={`priority-badge priority-badge--${priorityTone(issue.priority)}`}
-                      >
-                        {issue.priority}
-                      </span>
+                      <PriorityBadge priority={issue.priority} />
                       <strong>{formatPriorityScore(issue.priorityScore)}</strong>
                     </div>
                   </td>

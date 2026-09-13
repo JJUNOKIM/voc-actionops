@@ -201,28 +201,37 @@
 
 .priority-badge {
   display: inline-flex;
-  width: 28px;
+  width: 40px;
   height: 22px;
   align-items: center;
   justify-content: center;
-  border-left: 3px solid currentColor;
+  gap: 3px;
+  border: 1px solid #d6dce0;
+  border-radius: 3px;
   color: var(--muted);
   background: #f2f4f5;
   font-size: 9px;
   font-weight: 800;
 }
 
+.priority-badge svg {
+  flex: 0 0 auto;
+}
+
 .priority-badge--p0 {
+  border-color: #e9bbb7;
   color: #b33b31;
   background: #fff1ef;
 }
 
 .priority-badge--p1 {
-  color: #a46a17;
-  background: #fff7e9;
+  border-color: #fed7aa;
+  color: #c2410c;
+  background: #fff4ed;
 }
 
 .priority-badge--p2 {
+  border-color: #c7dceb;
   color: #2f6287;
   background: #eef5fa;
 }

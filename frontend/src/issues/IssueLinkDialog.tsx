@@ -12,8 +12,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { PageResponse } from '../datasets/types';
 import { ApiError } from '../lib/api-client';
 import { issuesRequest, linkFeedbackToIssueRequest } from './api';
-import { issueStatusLabel, issueStatusTone, priorityTone } from './format';
+import { issueStatusLabel, issueStatusTone } from './format';
 import type { IssueSummary } from './types';
+import { PriorityBadge } from './PriorityBadge';
 
 const PAGE_SIZE = 8;
 
@@ -254,13 +255,7 @@ export function IssueLinkDialog({
                             </small>
                           </span>
                           <span className="manual-issue-option-badges">
-                            <span
-                              className={`priority-badge priority-badge--${priorityTone(
-                                issue.priority,
-                              )}`}
-                            >
-                              {issue.priority}
-                            </span>
+                            <PriorityBadge priority={issue.priority} />
                             <span
                               className={`issue-status issue-status--${issueStatusTone(
                                 issue.status,

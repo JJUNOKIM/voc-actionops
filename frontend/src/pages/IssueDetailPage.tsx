@@ -31,8 +31,8 @@ import {
   formatPriorityScore,
   issueStatusLabel,
   issueStatusTone,
-  priorityTone,
 } from '../issues/format';
+import { PriorityBadge } from '../issues/PriorityBadge';
 import type { IssueAction, IssueDetail, IssueFeedback } from '../issues/types';
 import { IssueManagementPanel } from '../issues/IssueManagementPanel';
 import {
@@ -283,9 +283,7 @@ export function IssueDetailPage() {
           <p className="page-description">{issue.category}</p>
         </div>
         <div className="issue-detail-badges">
-          <span className={`priority-badge priority-badge--${priorityTone(issue.priority)}`}>
-            {issue.priority}
-          </span>
+          <PriorityBadge priority={issue.priority} />
           <span className={`issue-status issue-status--${issueStatusTone(issue.status)}`}>
             {issueStatusLabel(issue.status)}
           </span>
