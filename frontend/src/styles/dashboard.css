@@ -206,10 +206,10 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border: 2px solid #d6dce0;
+  border: 2px solid #2563eb;
   border-radius: 0;
-  color: var(--muted);
-  background: #f2f4f5;
+  color: #ffffff;
+  background: #2563eb;
   font-size: 9px;
   font-weight: 800;
 }
@@ -219,21 +219,18 @@
 }
 
 .priority-badge--p0 {
-  border-color: #e9bbb7;
-  color: #b33b31;
-  background: #fff1ef;
+  border-color: #dc2626;
+  background: #dc2626;
 }
 
 .priority-badge--p1 {
-  border-color: #fed7aa;
-  color: #c2410c;
-  background: #fff4ed;
+  border-color: #ea580c;
+  background: #ea580c;
 }
 
 .priority-badge--p2 {
-  border-color: #c7dceb;
-  color: #2f6287;
-  background: #eef5fa;
+  border-color: #2563eb;
+  background: #2563eb;
 }
 
 .dashboard-issue-copy {
