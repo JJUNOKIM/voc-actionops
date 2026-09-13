@@ -265,9 +265,9 @@ access token이 만료된 뒤에도 로그아웃할 수 있도록 refresh token�
 
 ---
 
-## 4. 사용자 API
+## 4. 사용자 및 조직 API
 
-조직 사용자 조회와 관리는 역할에 따라 제한한다.
+조직 사용자 조회와 사용자·조직 관리는 역할에 따라 제한한다.
 
 ### 4.1 조직 사용자 목록 조회
 
@@ -377,6 +377,43 @@ PATCH /api/v1/users/{userId}/role
 #### <설명>
 
 관리자는 같은 조직에 속한 다른 사용자의 역할을 변경할 수 있다. 현재 로그인한 관리자의 역할은 변경할 수 없다.
+
+---
+
+### 4.4 조직 이름 변경
+
+```http
+PATCH /api/v1/organizations/me
+```
+
+#### <Request>
+
+```json
+{
+  "name": "Customer Lab"
+}
+```
+
+#### <Response>
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Customer Lab"
+  },
+  "message": "조직 정보가 변경되었습니다."
+}
+```
+
+#### <권한>
+
+* ADMIN
+
+#### <설명>
+
+현재 로그인한 관리자가 속한 조직의 이름을 변경한다.
 
 ---
 

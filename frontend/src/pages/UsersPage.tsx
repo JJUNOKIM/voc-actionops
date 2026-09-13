@@ -1,8 +1,9 @@
-import { AlertCircle, RefreshCw, UserPlus, UsersRound } from 'lucide-react';
+import { AlertCircle, Building2, RefreshCw, Save, UserPlus, UsersRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '../auth/useAuth';
 import { ApiError } from '../lib/api-client';
+import { changeOrganizationNameRequest } from '../organizations/api';
 import type { OrganizationUser, Role } from '../types/api';
 import {
   changeOrganizationUserRoleRequest,
@@ -12,7 +13,11 @@ import { roleLabel, roleOptions } from '../users/labels';
 import { UserCreateDialog } from '../users/UserCreateDialog';
 
 export function UsersPage() {
-  const { user } = useAuth();
+  const { user, updateOrganizationName } = useAuth();
+  const [organizationName, setOrganizationName] = useState(user?.organizationName ?? '');
+  const [savingOrganization, setSavingOrganization] = useState(false);
+  const [organizationMessage, setOrganizationMessage] = useState<string | null>(null);
+  const [organizationError, setOrganizationError] = useState<string | null>(null);
   const [users, setUsers] = useState<OrganizationUser[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
@@ -82,6 +87,28 @@ export function UsersPage() {
     setCreateDialogOpen(false);
   }
 
+  async function saveOrganization(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = organizationName.trim();
+    if (name.length === 0 || name === user?.organizationName) return;
+
+    setSavingOrganization(true);
+    setOrganizationMessage(null);
+    setOrganizationError(null);
+    try {
+      const updatedOrganization = await changeOrganizationNameRequest(name);
+      setOrganizationName(updatedOrganization.name);
+      updateOrganizationName(updatedOrganization.name);
+      setOrganizationMessage('조직 정보를 변경했습니다.');
+    } catch (error) {
+      setOrganizationError(
+        error instanceof ApiError ? error.message : '조직 정보를 변경할 수 없습니다.',
+      );
+    } finally {
+      setSavingOrganization(false);
+    }
+  }
+
   const organizationUsers = users ?? [];
 
   return (
@@ -92,6 +119,47 @@ export function UsersPage() {
           <p className="page-description">조직 구성원과 서비스 접근 역할을 관리합니다.</p>
         </div>
       </header>
+
+      <section className="organization-settings" aria-labelledby="organization-title">
+        <div className="organization-settings-heading">
+          <Building2 size={19} aria-hidden="true" />
+          <div>
+            <h2 id="organization-title">조직 정보</h2>
+            <p>서비스에서 사용할 조직 이름을 관리합니다.</p>
+          </div>
+        </div>
+        <form className="organization-form" onSubmit={(event) => void saveOrganization(event)}>
+          <label htmlFor="organization-name">조직명</label>
+          <div>
+            <input
+              id="organization-name"
+              value={organizationName}
+              onChange={(event) => setOrganizationName(event.target.value)}
+              maxLength={100}
+              required
+              disabled={savingOrganization}
+            />
+            <button
+              className="secondary-button organization-save-button"
+              type="submit"
+              disabled={
+                savingOrganization ||
+                organizationName.trim().length === 0 ||
+                organizationName.trim() === user?.organizationName
+              }
+            >
+              <Save size={15} aria-hidden="true" />
+              <span>{savingOrganization ? '저장 중' : '저장'}</span>
+            </button>
+          </div>
+          {organizationMessage !== null && (
+            <p className="organization-message" role="status">{organizationMessage}</p>
+          )}
+          {organizationError !== null && (
+            <p className="organization-error" role="alert">{organizationError}</p>
+          )}
+        </form>
+      </section>
 
       <section className="user-workspace" aria-labelledby="user-list-title">
         <div className="user-toolbar">

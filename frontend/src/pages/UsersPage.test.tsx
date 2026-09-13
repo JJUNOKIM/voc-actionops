@@ -10,7 +10,14 @@ const userApiMocks = vi.hoisted(() => ({
   createOrganizationUserRequest: vi.fn(),
 }));
 
+const organizationApiMocks = vi.hoisted(() => ({
+  changeOrganizationNameRequest: vi.fn(),
+}));
+
+const updateOrganizationNameMock = vi.hoisted(() => vi.fn());
+
 vi.mock('../users/api', () => userApiMocks);
+vi.mock('../organizations/api', () => organizationApiMocks);
 vi.mock('../auth/useAuth', () => ({
   useAuth: () => ({
     user: {
@@ -21,6 +28,7 @@ vi.mock('../auth/useAuth', () => ({
       name: 'Demo Admin',
       role: 'ADMIN',
     },
+    updateOrganizationName: updateOrganizationNameMock,
   }),
 }));
 
@@ -44,7 +52,28 @@ describe('UsersPage', () => {
     userApiMocks.organizationUsersRequest.mockReset();
     userApiMocks.changeOrganizationUserRoleRequest.mockReset();
     userApiMocks.createOrganizationUserRequest.mockReset();
+    organizationApiMocks.changeOrganizationNameRequest.mockReset();
+    updateOrganizationNameMock.mockReset();
     userApiMocks.organizationUsersRequest.mockResolvedValue(users);
+  });
+
+  it('changes the organization name', async () => {
+    const user = userEvent.setup();
+    organizationApiMocks.changeOrganizationNameRequest.mockResolvedValue({
+      id: 11,
+      name: 'Customer Lab',
+    });
+    render(<UsersPage />);
+
+    const nameInput = screen.getByLabelText('조직명');
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Customer Lab');
+    await user.click(screen.getByRole('button', { name: '저장' }));
+
+    expect(organizationApiMocks.changeOrganizationNameRequest)
+      .toHaveBeenCalledWith('Customer Lab');
+    expect(updateOrganizationNameMock).toHaveBeenCalledWith('Customer Lab');
+    expect(await screen.findByText('조직 정보를 변경했습니다.')).toBeInTheDocument();
   });
 
   it('shows organization users and keeps the current account read only', async () => {

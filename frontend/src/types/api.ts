@@ -42,3 +42,8 @@ export interface OrganizationUser {
   name: string;
   role: Role;
 }
+
+export interface Organization {
+  id: number;
+  name: string;
+}
