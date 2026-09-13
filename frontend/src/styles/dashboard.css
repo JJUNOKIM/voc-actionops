@@ -206,8 +206,8 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border: 1px solid #d6dce0;
-  border-radius: 3px;
+  border: 2px solid #d6dce0;
+  border-radius: 0;
   color: var(--muted);
   background: #f2f4f5;
   font-size: 9px;
