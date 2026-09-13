@@ -4,10 +4,15 @@ import com.vocactionops.backend.action.domain.Action;
 import com.vocactionops.backend.action.domain.ActionStatus;
 import com.vocactionops.backend.action.repository.ActionRepository;
 import com.vocactionops.backend.analysis.domain.FeedbackAnalysis;
+import com.vocactionops.backend.analysis.job.domain.AnalysisJob;
+import com.vocactionops.backend.analysis.job.domain.AnalysisJobItem;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobItemRepository;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobRepository;
 import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.bootstrap.DemoFeedbackFixtures.FeedbackSeed;
 import com.vocactionops.backend.dashboard.application.IssueMetricsSnapshotService;
 import com.vocactionops.backend.dataset.domain.Dataset;
+import com.vocactionops.backend.dataset.domain.DatasetStatus;
 import com.vocactionops.backend.dataset.domain.SourceType;
 import com.vocactionops.backend.dataset.repository.DatasetRepository;
 import com.vocactionops.backend.feedback.domain.Feedback;
@@ -42,6 +47,8 @@ public class DemoScenarioSeedService {
 	private final DatasetRepository datasetRepository;
 	private final FeedbackRepository feedbackRepository;
 	private final FeedbackAnalysisRepository analysisRepository;
+	private final AnalysisJobRepository analysisJobRepository;
+	private final AnalysisJobItemRepository analysisJobItemRepository;
 	private final IssueRepository issueRepository;
 	private final IssueFeedbackRepository issueFeedbackRepository;
 	private final ActionRepository actionRepository;
@@ -52,6 +59,8 @@ public class DemoScenarioSeedService {
 			DatasetRepository datasetRepository,
 			FeedbackRepository feedbackRepository,
 			FeedbackAnalysisRepository analysisRepository,
+			AnalysisJobRepository analysisJobRepository,
+			AnalysisJobItemRepository analysisJobItemRepository,
 			IssueRepository issueRepository,
 			IssueFeedbackRepository issueFeedbackRepository,
 			ActionRepository actionRepository,
@@ -61,6 +70,8 @@ public class DemoScenarioSeedService {
 		this.datasetRepository = datasetRepository;
 		this.feedbackRepository = feedbackRepository;
 		this.analysisRepository = analysisRepository;
+		this.analysisJobRepository = analysisJobRepository;
+		this.analysisJobItemRepository = analysisJobItemRepository;
 		this.issueRepository = issueRepository;
 		this.issueFeedbackRepository = issueFeedbackRepository;
 		this.actionRepository = actionRepository;
@@ -70,10 +81,12 @@ public class DemoScenarioSeedService {
 
 	public void initialize(User admin) {
 		Organization organization = admin.getOrganization();
-		if (datasetRepository.existsByOrganizationIdAndName(
+		Dataset existingDataset = datasetRepository.findByOrganizationIdAndName(
 				organization.getId(),
 				DATASET_NAME
-		)) {
+		).orElse(null);
+		if (existingDataset != null) {
+			ensureAnalysisJob(organization, existingDataset);
 			return;
 		}
 
@@ -82,6 +95,7 @@ public class DemoScenarioSeedService {
 		Dataset dataset = createDataset(organization, admin, seeds.size());
 		List<Feedback> feedbacks = createFeedbacks(organization, dataset, today, seeds);
 		createAnalyses(feedbacks, seeds);
+		createCompletedAnalysisJob(organization, dataset, feedbacks);
 		List<Issue> issues = createIssues(organization, admin);
 		linkFeedbacks(issues, feedbacks);
 		for (Issue issue : issues) {
@@ -152,6 +166,41 @@ public class DemoScenarioSeedService {
 			analyses.add(analysis);
 		}
 		analysisRepository.saveAllAndFlush(analyses);
+	}
+
+	private void ensureAnalysisJob(Organization organization, Dataset dataset) {
+		if (dataset.getStatus() != DatasetStatus.ANALYZED || analysisJobRepository
+				.findTopByDatasetIdAndOrganizationIdOrderByCreatedAtDesc(
+						dataset.getId(), organization.getId()
+				)
+				.isPresent()) {
+			return;
+		}
+		List<Feedback> feedbacks = feedbackRepository
+				.findAllByDatasetIdAndOrganizationIdOrderById(
+						dataset.getId(), organization.getId()
+				);
+		createCompletedAnalysisJob(organization, dataset, feedbacks);
+	}
+
+	private void createCompletedAnalysisJob(
+			Organization organization,
+			Dataset dataset,
+			List<Feedback> feedbacks
+	) {
+		AnalysisJob job = new AnalysisJob(organization, dataset, feedbacks.size());
+		job.start();
+		List<AnalysisJobItem> items = new ArrayList<>(feedbacks.size());
+		for (Feedback feedback : feedbacks) {
+			AnalysisJobItem item = new AnalysisJobItem(job, feedback);
+			item.startAttempt();
+			item.succeed();
+			items.add(item);
+			job.recordSuccess();
+		}
+		job.complete();
+		analysisJobRepository.saveAndFlush(job);
+		analysisJobItemRepository.saveAllAndFlush(items);
 	}
 
 	private List<Issue> createIssues(Organization organization, User admin) {

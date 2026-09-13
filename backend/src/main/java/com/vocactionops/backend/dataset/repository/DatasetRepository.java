@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface DatasetRepository extends JpaRepository<Dataset, Long> {
 
-	boolean existsByOrganizationIdAndName(Long organizationId, String name);
+	Optional<Dataset> findByOrganizationIdAndName(Long organizationId, String name);
 
 	@Query("""
 			SELECT dataset

@@ -2,6 +2,10 @@ package com.vocactionops.backend.bootstrap;
 
 import com.vocactionops.backend.action.domain.ActionStatus;
 import com.vocactionops.backend.action.repository.ActionRepository;
+import com.vocactionops.backend.analysis.job.domain.AnalysisJobItemStatus;
+import com.vocactionops.backend.analysis.job.domain.AnalysisJobStatus;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobItemRepository;
+import com.vocactionops.backend.analysis.job.repository.AnalysisJobRepository;
 import com.vocactionops.backend.analysis.repository.FeedbackAnalysisRepository;
 import com.vocactionops.backend.dashboard.application.IssueMetricsSnapshotService;
 import com.vocactionops.backend.dashboard.repository.IssueMetricsSnapshotRepository;
@@ -50,6 +54,12 @@ class DemoDataBootstrapIntegrationTests {
 
 	@Autowired
 	private FeedbackAnalysisRepository analysisRepository;
+
+	@Autowired
+	private AnalysisJobRepository analysisJobRepository;
+
+	@Autowired
+	private AnalysisJobItemRepository analysisJobItemRepository;
 
 	@Autowired
 	private IssueRepository issueRepository;
@@ -104,6 +114,17 @@ class DemoDataBootstrapIntegrationTests {
 				});
 		assertThat(feedbackRepository.count()).isEqualTo(14);
 		assertThat(analysisRepository.count()).isEqualTo(14);
+		assertThat(analysisJobRepository.findAll())
+				.singleElement()
+				.satisfies(job -> {
+					assertThat(job.getStatus()).isEqualTo(AnalysisJobStatus.COMPLETED);
+					assertThat(job.getProcessedCount()).isEqualTo(14);
+					assertThat(job.getSuccessCount()).isEqualTo(14);
+				});
+		assertThat(analysisJobItemRepository.findAll())
+				.hasSize(14)
+				.allSatisfy(item -> assertThat(item.getStatus())
+						.isEqualTo(AnalysisJobItemStatus.SUCCESS));
 		assertThat(issueRepository.findAll())
 				.extracting(issue -> issue.getStatus())
 				.containsExactlyInAnyOrder(
@@ -148,5 +169,21 @@ class DemoDataBootstrapIntegrationTests {
 		assertThat(datasetRepository.count()).isOne();
 		assertThat(feedbackRepository.count()).isEqualTo(14);
 		assertThat(issueRepository.count()).isEqualTo(3);
+	}
+
+	@Test
+	void restoresMissingAnalysisJobWithoutDuplicatingScenario() {
+		bootstrapService.initialize();
+		analysisJobItemRepository.deleteAll();
+		analysisJobRepository.deleteAll();
+
+		bootstrapService.initialize();
+		bootstrapService.initialize();
+
+		assertThat(datasetRepository.count()).isOne();
+		assertThat(feedbackRepository.count()).isEqualTo(14);
+		assertThat(issueRepository.count()).isEqualTo(3);
+		assertThat(analysisJobRepository.count()).isOne();
+		assertThat(analysisJobItemRepository.count()).isEqualTo(14);
 	}
 }
