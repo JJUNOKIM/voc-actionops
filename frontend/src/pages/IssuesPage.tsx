@@ -18,9 +18,9 @@ import {
   formatPriorityScore,
   issueStatusLabel,
   issueStatusTone,
-  priorityTone,
 } from '../issues/format';
 import { issuePriorityOptions, issueStatusOptions } from '../issues/labels';
+import { PriorityBadge } from '../issues/PriorityBadge';
 import type { IssuePriority, IssueStatus, IssueSummary } from '../issues/types';
 import type { PageResponse } from '../datasets/types';
 import { ApiError } from '../lib/api-client';
@@ -275,9 +275,7 @@ function IssueTable({ issues, refreshing }: { issues: IssueSummary[]; refreshing
             <tr key={issue.id}>
               <td data-label="우선순위">
                 <div className="issue-priority-cell">
-                  <span className={`priority-badge priority-badge--${priorityTone(issue.priority)}`}>
-                    {issue.priority}
-                  </span>
+                  <PriorityBadge priority={issue.priority} />
                   <strong>{formatPriorityScore(issue.priorityScore)}</strong>
                 </div>
               </td>

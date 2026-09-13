@@ -1,4 +1,4 @@
-import type { ActionStatus, IssuePriority, IssueStatus } from './types';
+import type { ActionStatus, IssueStatus } from './types';
 
 const issueStatusLabels: Record<IssueStatus, string> = {
   NEW: '신규',
@@ -32,10 +32,6 @@ export function formatPriorityScore(value: number | null): string {
 export function formatNegativeRate(negativeCount: number, feedbackCount: number): string {
   if (feedbackCount === 0) return '-';
   return `${((negativeCount / feedbackCount) * 100).toFixed(1)}%`;
-}
-
-export function priorityTone(priority: IssuePriority): string {
-  return priority.toLowerCase();
 }
 
 export function issueStatusTone(status: IssueStatus): string {

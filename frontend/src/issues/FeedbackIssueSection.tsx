@@ -20,11 +20,12 @@ import {
   feedbackIssuesRequest,
   issueCandidatesRequest,
 } from './api';
-import { issueStatusLabel, issueStatusTone, priorityTone } from './format';
+import { issueStatusLabel, issueStatusTone } from './format';
 import type { FeedbackIssue, IssueCandidate } from './types';
 import { IssueDraftDialog } from './IssueDraftDialog';
 import { IssueLinkDialog } from './IssueLinkDialog';
 import { IssueLinkActions } from './IssueLinkActions';
+import { PriorityBadge } from './PriorityBadge';
 
 type WorkflowState =
   | {
@@ -320,9 +321,7 @@ function LinkedIssueRow({
         </span>
       </div>
       <div className="feedback-issue-badges">
-        <span className={`priority-badge priority-badge--${priorityTone(issue.priority)}`}>
-          {issue.priority}
-        </span>
+        <PriorityBadge priority={issue.priority} />
         <span className={`issue-status issue-status--${issueStatusTone(issue.status)}`}>
           {issueStatusLabel(issue.status)}
         </span>
@@ -370,9 +369,7 @@ function CandidateRow({
         <span>텍스트 {formatPercent(candidate.matchSignals.textSimilarity)}</span>
       </div>
       <div className="feedback-candidate-action">
-        <span className={`priority-badge priority-badge--${priorityTone(candidate.priority)}`}>
-          {candidate.priority}
-        </span>
+        <PriorityBadge priority={candidate.priority} />
         <span className={`issue-status issue-status--${issueStatusTone(candidate.status)}`}>
           {issueStatusLabel(candidate.status)}
         </span>
