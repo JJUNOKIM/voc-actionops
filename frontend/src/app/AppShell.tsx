@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   MessageSquareText,
+  Users,
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -151,6 +152,12 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
           <CircleDotDashed size={19} aria-hidden="true" />
           <span>이슈</span>
         </NavLink>
+        {user.role === 'ADMIN' && (
+          <NavLink className="nav-item" to="/users" onClick={onNavigate}>
+            <Users size={19} aria-hidden="true" />
+            <span>사용자 관리</span>
+          </NavLink>
+        )}
       </nav>
 
       <div className="sidebar-account">

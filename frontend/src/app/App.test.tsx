@@ -72,6 +72,7 @@ describe('authentication flow', () => {
 
     expect(await screen.findByRole('heading', { name: '운영 개요' })).toBeInTheDocument();
     expect(screen.getByRole('complementary')).toHaveTextContent('VOC ActionOps Demo');
+    expect(screen.getByRole('link', { name: '사용자 관리' })).toBeInTheDocument();
     expect(authApiMocks.loginRequest).toHaveBeenCalledWith(
       'admin@voc-actionops.local',
       'demo-password',
@@ -89,7 +90,7 @@ describe('authentication flow', () => {
     authApiMocks.currentUserRequest.mockResolvedValue(developerProfile);
 
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/users']}>
         <AuthProvider>
           <App />
         </AuthProvider>
@@ -104,5 +105,6 @@ describe('authentication flow', () => {
     expect(screen.queryByRole('link', { name: '개요' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '데이터셋' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '피드백' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '사용자 관리' })).not.toBeInTheDocument();
   });
 });
