@@ -32,6 +32,14 @@ const profile: UserProfile = {
   role: 'ADMIN',
 };
 
+const developerProfile: UserProfile = {
+  ...profile,
+  id: 2,
+  email: 'developer@voc-actionops.local',
+  name: 'Demo Developer',
+  role: 'DEVELOPER',
+};
+
 describe('authentication flow', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -73,5 +81,28 @@ describe('authentication flow', () => {
 
     expect(await screen.findByRole('heading', { name: '로그인' })).toBeInTheDocument();
     expect(authApiMocks.logoutRequest).toHaveBeenCalledWith('refresh-token');
+  });
+
+  it('opens the issue workspace for a developer account', async () => {
+    const user = userEvent.setup();
+    authApiMocks.loginRequest.mockResolvedValue(tokens);
+    authApiMocks.currentUserRequest.mockResolvedValue(developerProfile);
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole('button', { name: '데모 계정 입력' }));
+    await user.click(screen.getByRole('button', { name: '로그인' }));
+
+    expect(await screen.findByRole('heading', { name: '이슈' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '이슈' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '개요' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '데이터셋' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '피드백' })).not.toBeInTheDocument();
   });
 });

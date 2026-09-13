@@ -17,7 +17,7 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route index element={<OverviewPage />} />
+          <Route index element={<HomePage />} />
           <Route path="datasets" element={<DatasetsPage />} />
           <Route path="datasets/:datasetId" element={<DatasetDetailPage />} />
           <Route path="feedbacks" element={<FeedbacksPage />} />
@@ -29,6 +29,15 @@ export function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
+}
+
+function HomePage() {
+  const { user } = useAuth();
+
+  if (user?.role === 'DEVELOPER') {
+    return <Navigate to="/issues" replace />;
+  }
+  return <OverviewPage />;
 }
 
 function ProtectedRoute() {
