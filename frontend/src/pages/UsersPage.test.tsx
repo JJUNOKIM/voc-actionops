@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +7,7 @@ import { UsersPage } from './UsersPage';
 const userApiMocks = vi.hoisted(() => ({
   organizationUsersRequest: vi.fn(),
   changeOrganizationUserRoleRequest: vi.fn(),
+  createOrganizationUserRequest: vi.fn(),
 }));
 
 vi.mock('../users/api', () => userApiMocks);
@@ -42,6 +43,7 @@ describe('UsersPage', () => {
   beforeEach(() => {
     userApiMocks.organizationUsersRequest.mockReset();
     userApiMocks.changeOrganizationUserRoleRequest.mockReset();
+    userApiMocks.createOrganizationUserRequest.mockReset();
     userApiMocks.organizationUsersRequest.mockResolvedValue(users);
   });
 
@@ -70,5 +72,42 @@ describe('UsersPage', () => {
     expect(await screen.findByText('Demo Viewer님의 역할을 변경했습니다. (개발자)'))
       .toBeInTheDocument();
     expect(roleSelect).toHaveValue('DEVELOPER');
+  });
+
+  it('opens the user creation dialog', async () => {
+    const user = userEvent.setup();
+    render(<UsersPage />);
+
+    await screen.findByText('Demo Viewer');
+    await user.click(screen.getByRole('button', { name: '사용자 추가' }));
+
+    expect(screen.getByRole('dialog', { name: '사용자 추가' })).toBeInTheDocument();
+    expect(screen.getByLabelText('이름')).toHaveFocus();
+  });
+
+  it('adds a created user to the current list', async () => {
+    const user = userEvent.setup();
+    userApiMocks.createOrganizationUserRequest.mockResolvedValue({
+      id: 3,
+      email: 'cs@example.com',
+      name: 'New CS',
+      role: 'CS',
+    });
+    render(<UsersPage />);
+
+    await screen.findByText('Demo Viewer');
+    await user.click(screen.getByRole('button', { name: '사용자 추가' }));
+    const dialog = screen.getByRole('dialog', { name: '사용자 추가' });
+    await user.type(within(dialog).getByLabelText('이름'), 'New CS');
+    await user.type(within(dialog).getByLabelText('이메일'), 'cs@example.com');
+    await user.type(within(dialog).getByLabelText('초기 비밀번호'), 'Password123!');
+    await user.selectOptions(within(dialog).getByLabelText('역할'), 'CS');
+    await user.click(within(dialog).getByRole('button', { name: '사용자 추가' }));
+
+    expect(await screen.findByText('New CS님을 조직 사용자로 추가했습니다.'))
+      .toBeInTheDocument();
+    expect(screen.getByText('3명')).toBeInTheDocument();
+    expect(screen.getByText('cs@example.com')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: '사용자 추가' })).not.toBeInTheDocument();
   });
 });

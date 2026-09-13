@@ -67,6 +67,86 @@ class UserManagementIntegrationTests {
 	}
 
 	@Test
+	void adminCreatesUserInOwnOrganization() throws Exception {
+		String accessToken = login(admin.getEmail());
+
+		mockMvc.perform(post("/api/v1/users")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(createUserRequest(
+							"  NEW.USER@EXAMPLE.COM  ",
+							"New User",
+							Role.CS,
+							"NewPassword123!"
+					)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.email").value("new.user@example.com"))
+				.andExpect(jsonPath("$.data.name").value("New User"))
+				.andExpect(jsonPath("$.data.role").value(Role.CS.name()))
+				.andExpect(jsonPath("$.data.password").doesNotExist())
+				.andExpect(jsonPath("$.data.passwordHash").doesNotExist());
+
+		User createdUser = userRepository.findByEmailIgnoreCase("new.user@example.com").orElseThrow();
+		assertThat(createdUser.getOrganization().getId())
+				.isEqualTo(admin.getOrganization().getId());
+		assertThat(passwordEncoder.matches("NewPassword123!", createdUser.getPasswordHash())).isTrue();
+		assertThat(createdUser.getPasswordHash()).isNotEqualTo("NewPassword123!");
+	}
+
+	@Test
+	void rejectsDuplicatedUserEmailIgnoringCase() throws Exception {
+		String accessToken = login(admin.getEmail());
+
+		mockMvc.perform(post("/api/v1/users")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(createUserRequest(
+							" VIEWER@EXAMPLE.COM ",
+							"Another Viewer",
+							Role.VIEWER,
+							"NewPassword123!"
+					)))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.error.code")
+						.value(ErrorCode.DUPLICATED_RESOURCE.code()));
+	}
+
+	@Test
+	void rejectsInvalidUserInput() throws Exception {
+		String accessToken = login(admin.getEmail());
+
+		mockMvc.perform(post("/api/v1/users")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(createUserRequest(
+							"invalid-email",
+							" ",
+							Role.PM,
+							"short"
+					)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REQUEST.code()))
+				.andExpect(jsonPath("$.error.details.length()").value(3));
+	}
+
+	@Test
+	void nonAdminCannotCreateUser() throws Exception {
+		String accessToken = login(viewer.getEmail());
+
+		mockMvc.perform(post("/api/v1/users")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(createUserRequest(
+							"new.user@example.com",
+							"New User",
+							Role.CS,
+							"NewPassword123!"
+					)))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.FORBIDDEN.code()));
+	}
+
+	@Test
 	void adminChangesOrganizationUserRole() throws Exception {
 		String accessToken = login(admin.getEmail());
 
@@ -154,6 +234,22 @@ class UserManagementIntegrationTests {
 				  "role": "%s"
 				}
 				""".formatted(role.name());
+	}
+
+	private String createUserRequest(
+			String email,
+			String name,
+			Role role,
+			String password
+	) {
+		return """
+				{
+				  "email": "%s",
+				  "name": "%s",
+				  "role": "%s",
+				  "password": "%s"
+				}
+				""".formatted(email, name, role.name(), password);
 	}
 
 	private String bearer(String accessToken) {

@@ -15,7 +15,8 @@
   border-bottom: 1px solid var(--border);
 }
 
-.user-toolbar > div {
+.user-toolbar > div:first-child,
+.user-toolbar-actions {
   display: flex;
   align-items: baseline;
   gap: 11px;
@@ -27,7 +28,7 @@
   font-size: 14px;
 }
 
-.user-toolbar span {
+.user-toolbar > div:first-child > span {
   color: var(--subtle);
   font-size: 10px;
 }
@@ -35,6 +36,17 @@
 .user-toolbar .icon-button {
   border-color: var(--border);
   color: var(--muted);
+}
+
+.user-toolbar-actions {
+  align-items: center;
+  gap: 7px;
+}
+
+.user-create-button {
+  min-height: 38px;
+  padding-inline: 13px;
+  font-size: 11px;
 }
 
 .user-notice {
@@ -207,6 +219,21 @@
   font-size: 10px;
 }
 
+.user-dialog {
+  width: min(100%, 560px);
+}
+
+.user-dialog-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 14px;
+}
+
+.user-dialog-error {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 @media (max-width: 640px) {
   .user-workspace {
     margin-inline: -18px;
@@ -277,6 +304,14 @@
     gap: 4px;
   }
 
+  .user-dialog-body {
+    grid-template-columns: 1fr;
+  }
+
+  .user-dialog-error {
+    grid-column: auto;
+  }
+
   .user-role-field select {
     width: 100%;
   }
@@ -287,6 +322,16 @@
 }
 
 @media (max-width: 430px) {
+  .user-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .user-toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .user-table tr {
     grid-template-columns: 1fr;
   }
