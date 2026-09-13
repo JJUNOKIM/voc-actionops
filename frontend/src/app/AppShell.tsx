@@ -131,18 +131,22 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
       </div>
 
       <nav className="sidebar-nav" aria-label="주요 메뉴">
-        <NavLink className="nav-item" to="/" end onClick={onNavigate}>
-          <LayoutDashboard size={19} aria-hidden="true" />
-          <span>개요</span>
-        </NavLink>
-        <NavLink className="nav-item" to="/datasets" onClick={onNavigate}>
-          <Database size={19} aria-hidden="true" />
-          <span>데이터셋</span>
-        </NavLink>
-        <NavLink className="nav-item" to="/feedbacks" onClick={onNavigate}>
-          <MessageSquareText size={19} aria-hidden="true" />
-          <span>피드백</span>
-        </NavLink>
+        {user.role !== 'DEVELOPER' && (
+          <>
+            <NavLink className="nav-item" to="/" end onClick={onNavigate}>
+              <LayoutDashboard size={19} aria-hidden="true" />
+              <span>개요</span>
+            </NavLink>
+            <NavLink className="nav-item" to="/datasets" onClick={onNavigate}>
+              <Database size={19} aria-hidden="true" />
+              <span>데이터셋</span>
+            </NavLink>
+            <NavLink className="nav-item" to="/feedbacks" onClick={onNavigate}>
+              <MessageSquareText size={19} aria-hidden="true" />
+              <span>피드백</span>
+            </NavLink>
+          </>
+        )}
         <NavLink className="nav-item" to="/issues" onClick={onNavigate}>
           <CircleDotDashed size={19} aria-hidden="true" />
           <span>이슈</span>
