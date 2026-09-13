@@ -1,3 +1,86 @@
+.organization-settings {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.7fr) minmax(320px, 1.3fr);
+  gap: 32px;
+  padding: 22px 20px;
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.organization-settings-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--brand);
+}
+
+.organization-settings-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.organization-settings-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.organization-form > label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.organization-form > div {
+  display: flex;
+  gap: 8px;
+}
+
+.organization-form input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.organization-form input:focus {
+  border-color: var(--focus);
+  outline: 3px solid rgb(23 131 110 / 14%);
+  outline-offset: 1px;
+}
+
+.organization-save-button {
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding-inline: 13px;
+  font-size: 11px;
+}
+
+.organization-message,
+.organization-error {
+  margin: 8px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.organization-message {
+  color: var(--brand);
+}
+
+.organization-error {
+  color: var(--danger);
+}
+
 .user-workspace {
   margin-top: 16px;
   border-top: 1px solid var(--border-strong);
@@ -235,6 +318,13 @@
 }
 
 @media (max-width: 640px) {
+  .organization-settings {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-inline: -18px;
+    padding-inline: 18px;
+  }
+
   .user-workspace {
     margin-inline: -18px;
   }

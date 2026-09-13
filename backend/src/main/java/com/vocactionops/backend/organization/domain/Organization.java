@@ -35,4 +35,8 @@ public class Organization extends BaseTimeEntity {
 	public String getName() {
 		return name;
 	}
+
+	public void changeName(String name) {
+		this.name = Objects.requireNonNull(name, "name must not be null").trim();
+	}
 }
