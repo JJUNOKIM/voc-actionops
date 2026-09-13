@@ -12,6 +12,7 @@ import './styles/feedbacks.css';
 import './styles/dashboard.css';
 import './styles/issues.css';
 import './styles/issue-trends.css';
+import './styles/users.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

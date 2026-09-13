@@ -82,4 +82,8 @@ public class User extends BaseTimeEntity {
 	public Role getRole() {
 		return role;
 	}
+
+	public void changeRole(Role nextRole) {
+		this.role = Objects.requireNonNull(nextRole, "nextRole must not be null");
+	}
 }

@@ -8,6 +8,7 @@ import { FeedbacksPage } from '../pages/FeedbacksPage';
 import { IssueDetailPage } from '../pages/IssueDetailPage';
 import { IssuesPage } from '../pages/IssuesPage';
 import { OverviewPage } from '../pages/OverviewPage';
+import { UsersPage } from '../pages/UsersPage';
 import { LoginPage } from '../auth/LoginPage';
 import { useAuth } from '../auth/useAuth';
 
@@ -24,6 +25,9 @@ export function App() {
           <Route path="feedbacks/:feedbackId" element={<FeedbackDetailPage />} />
           <Route path="issues" element={<IssuesPage />} />
           <Route path="issues/:issueId" element={<IssueDetailPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="users" element={<UsersPage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -49,6 +53,15 @@ function ProtectedRoute() {
   }
   if (status === 'unauthenticated') {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+  return <Outlet />;
+}
+
+function AdminRoute() {
+  const { user } = useAuth();
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to="/" replace />;
   }
   return <Outlet />;
 }

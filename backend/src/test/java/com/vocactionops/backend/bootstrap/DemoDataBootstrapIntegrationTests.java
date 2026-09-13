@@ -93,7 +93,7 @@ class DemoDataBootstrapIntegrationTests {
 		bootstrapService.initialize();
 
 		assertThat(organizationRepository.count()).isOne();
-		assertThat(userRepository.count()).isOne();
+		assertThat(userRepository.count()).isEqualTo(5);
 
 		User user = userRepository.findByEmailIgnoreCase(properties.userEmail()).orElseThrow();
 		assertThat(organizationRepository.findAll())
@@ -104,6 +104,15 @@ class DemoDataBootstrapIntegrationTests {
 		assertThat(user.getRole()).isEqualTo(Role.ADMIN);
 		assertThat(passwordEncoder.matches(properties.userPassword(), user.getPasswordHash())).isTrue();
 		assertThat(user.getPasswordHash()).isNotEqualTo(properties.userPassword());
+		assertThat(userRepository.findAll())
+				.extracting(User::getRole)
+				.containsExactlyInAnyOrder(
+						Role.ADMIN,
+						Role.PM,
+						Role.CS,
+						Role.DEVELOPER,
+						Role.VIEWER
+				);
 
 		assertThat(datasetRepository.findAll())
 				.singleElement()
@@ -165,7 +174,7 @@ class DemoDataBootstrapIntegrationTests {
 		bootstrapService.initialize();
 
 		assertThat(organizationRepository.count()).isOne();
-		assertThat(userRepository.count()).isOne();
+		assertThat(userRepository.count()).isEqualTo(5);
 		assertThat(datasetRepository.count()).isOne();
 		assertThat(feedbackRepository.count()).isEqualTo(14);
 		assertThat(issueRepository.count()).isEqualTo(3);

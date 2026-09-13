@@ -9,8 +9,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class DemoDataBootstrapService {
+
+	private static final List<DemoUser> DEMO_USERS = List.of(
+			new DemoUser("pm@voc-actionops.local", "Demo PM", Role.PM),
+			new DemoUser("cs@voc-actionops.local", "Demo CS", Role.CS),
+			new DemoUser("developer@voc-actionops.local", "Demo Developer", Role.DEVELOPER),
+			new DemoUser("viewer@voc-actionops.local", "Demo Viewer", Role.VIEWER)
+	);
 
 	private final DemoDataProperties properties;
 	private final OrganizationRepository organizationRepository;
@@ -37,6 +46,7 @@ public class DemoDataBootstrapService {
 		String email = properties.userEmail().trim();
 		User admin = userRepository.findByEmailIgnoreCase(email)
 				.orElseGet(() -> createAdmin(email));
+		ensureOrganizationUsers(admin);
 		scenarioSeedService.initialize(admin);
 	}
 
@@ -51,5 +61,19 @@ public class DemoDataBootstrapService {
 				properties.userName().trim(),
 				Role.ADMIN
 		));
+	}
+
+	private void ensureOrganizationUsers(User admin) {
+		DEMO_USERS.forEach(demoUser -> userRepository.findByEmailIgnoreCase(demoUser.email())
+				.orElseGet(() -> userRepository.save(new User(
+						admin.getOrganization(),
+						demoUser.email(),
+						passwordEncoder.encode(properties.userPassword()),
+						demoUser.name(),
+						demoUser.role()
+				))));
+	}
+
+	private record DemoUser(String email, String name, Role role) {
 	}
 }

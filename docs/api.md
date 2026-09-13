@@ -336,9 +336,28 @@ PATCH /api/v1/users/{userId}/role
 }
 ```
 
+#### <Response>
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 2,
+    "email": "developer@example.com",
+    "name": "개발자 사용자",
+    "role": "DEVELOPER"
+  },
+  "message": "사용자 역할이 변경되었습니다."
+}
+```
+
 #### <권한>
 
 * ADMIN
+
+#### <설명>
+
+관리자는 같은 조직에 속한 다른 사용자의 역할을 변경할 수 있다. 현재 로그인한 관리자의 역할은 변경할 수 없다.
 
 ---
 
