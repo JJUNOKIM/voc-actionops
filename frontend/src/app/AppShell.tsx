@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   MessageSquareText,
+  UserRound,
   Users,
   X,
 } from 'lucide-react';
@@ -151,6 +152,10 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
         <NavLink className="nav-item" to="/issues" onClick={onNavigate}>
           <CircleDotDashed size={19} aria-hidden="true" />
           <span>이슈</span>
+        </NavLink>
+        <NavLink className="nav-item" to="/account" onClick={onNavigate}>
+          <UserRound size={19} aria-hidden="true" />
+          <span>내 계정</span>
         </NavLink>
         {user.role === 'ADMIN' && (
           <NavLink className="nav-item" to="/users" onClick={onNavigate}>

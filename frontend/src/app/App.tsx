@@ -9,6 +9,7 @@ import { IssueDetailPage } from '../pages/IssueDetailPage';
 import { IssuesPage } from '../pages/IssuesPage';
 import { OverviewPage } from '../pages/OverviewPage';
 import { UsersPage } from '../pages/UsersPage';
+import { AccountPage } from '../pages/AccountPage';
 import { LoginPage } from '../auth/LoginPage';
 import { useAuth } from '../auth/useAuth';
 
@@ -25,6 +26,7 @@ export function App() {
           <Route path="feedbacks/:feedbackId" element={<FeedbackDetailPage />} />
           <Route path="issues" element={<IssuesPage />} />
           <Route path="issues/:issueId" element={<IssueDetailPage />} />
+          <Route path="account" element={<AccountPage />} />
           <Route element={<AdminRoute />}>
             <Route path="users" element={<UsersPage />} />
           </Route>

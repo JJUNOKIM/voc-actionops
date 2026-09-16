@@ -1,5 +1,6 @@
 package com.vocactionops.backend.user;
 
+import com.vocactionops.backend.auth.repository.RefreshTokenRepository;
 import com.vocactionops.backend.common.exception.ErrorCode;
 import com.vocactionops.backend.organization.domain.Organization;
 import com.vocactionops.backend.organization.repository.OrganizationRepository;
@@ -46,6 +47,9 @@ class UserManagementIntegrationTests {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private RefreshTokenRepository refreshTokenRepository;
 
 	@Autowired
 	private DatabaseCleaner databaseCleaner;
@@ -201,6 +205,51 @@ class UserManagementIntegrationTests {
 				.andExpect(jsonPath("$.error.code").value(ErrorCode.FORBIDDEN.code()));
 	}
 
+	@Test
+	void userChangesOwnPassword() throws Exception {
+		String accessToken = login(viewer.getEmail());
+
+		mockMvc.perform(patch("/api/v1/users/me/password")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(passwordRequest(PASSWORD, "NewPassword123!")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("비밀번호가 변경되었습니다."));
+
+		User changedUser = userRepository.findById(viewer.getId()).orElseThrow();
+		assertThat(passwordEncoder.matches("NewPassword123!", changedUser.getPasswordHash())).isTrue();
+		assertThat(refreshTokenRepository.findAll()).allMatch(token -> token.getRevokedAt() != null);
+	}
+
+	@Test
+	void rejectsIncorrectCurrentPassword() throws Exception {
+		String accessToken = login(viewer.getEmail());
+
+		mockMvc.perform(patch("/api/v1/users/me/password")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(passwordRequest("WrongPassword!", "NewPassword123!")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code")
+						.value(ErrorCode.INVALID_CURRENT_PASSWORD.code()));
+
+		assertThat(passwordEncoder.matches(PASSWORD, userRepository.findById(viewer.getId())
+				.orElseThrow()
+				.getPasswordHash())).isTrue();
+	}
+
+	@Test
+	void rejectsShortNewPassword() throws Exception {
+		String accessToken = login(viewer.getEmail());
+
+		mockMvc.perform(patch("/api/v1/users/me/password")
+					.header("Authorization", bearer(accessToken))
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(passwordRequest(PASSWORD, "short")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value(ErrorCode.INVALID_REQUEST.code()));
+	}
+
 	private User saveUser(Organization organization, String email, Role role) {
 		return userRepository.save(new User(
 				organization,
@@ -250,6 +299,15 @@ class UserManagementIntegrationTests {
 				  "password": "%s"
 				}
 				""".formatted(email, name, role.name(), password);
+	}
+
+	private String passwordRequest(String currentPassword, String newPassword) {
+		return """
+				{
+				  "currentPassword": "%s",
+				  "newPassword": "%s"
+				}
+				""".formatted(currentPassword, newPassword);
 	}
 
 	private String bearer(String accessToken) {

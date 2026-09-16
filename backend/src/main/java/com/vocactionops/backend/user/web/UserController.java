@@ -84,7 +84,26 @@ public class UserController {
 		);
 	}
 
+	@PatchMapping("/me/password")
+	public ApiResponse<Void> changePassword(
+			@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+			@Valid @RequestBody PasswordChangeRequest request
+	) {
+		userCommandService.changePassword(
+				authenticatedUser,
+				request.currentPassword(),
+				request.newPassword()
+		);
+		return ApiResponse.success(null, "비밀번호가 변경되었습니다.");
+	}
+
 	public record RoleRequest(@NotNull Role role) {
+	}
+
+	public record PasswordChangeRequest(
+			@NotBlank @Size(max = 72) String currentPassword,
+			@NotBlank @Size(min = 8, max = 72) String newPassword
+	) {
 	}
 
 	public record CreateUserRequest(

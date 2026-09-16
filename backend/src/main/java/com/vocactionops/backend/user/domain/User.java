@@ -86,4 +86,8 @@ public class User extends BaseTimeEntity {
 	public void changeRole(Role nextRole) {
 		this.role = Objects.requireNonNull(nextRole, "nextRole must not be null");
 	}
+
+	public void changePasswordHash(String passwordHash) {
+		this.passwordHash = Objects.requireNonNull(passwordHash, "passwordHash must not be null");
+	}
 }

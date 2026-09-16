@@ -1,5 +1,6 @@
 package com.vocactionops.backend.user.application;
 
+import com.vocactionops.backend.auth.application.RefreshTokenService;
 import com.vocactionops.backend.auth.security.AuthenticatedUser;
 import com.vocactionops.backend.common.exception.CustomException;
 import com.vocactionops.backend.common.exception.ErrorCode;
@@ -20,15 +21,18 @@ public class UserCommandService {
 	private final UserRepository userRepository;
 	private final OrganizationRepository organizationRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final RefreshTokenService refreshTokenService;
 
 	public UserCommandService(
 			UserRepository userRepository,
 			OrganizationRepository organizationRepository,
-			PasswordEncoder passwordEncoder
+			PasswordEncoder passwordEncoder,
+			RefreshTokenService refreshTokenService
 	) {
 		this.userRepository = userRepository;
 		this.organizationRepository = organizationRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.refreshTokenService = refreshTokenService;
 	}
 
 	@Transactional
@@ -74,6 +78,25 @@ public class UserCommandService {
 
 		user.changeRole(role);
 		return organizationUser(user);
+	}
+
+	@Transactional
+	public void changePassword(
+			AuthenticatedUser authenticatedUser,
+			String currentPassword,
+			String newPassword
+	) {
+		User user = userRepository.findByIdAndOrganizationId(
+				authenticatedUser.userId(),
+				authenticatedUser.organizationId()
+		).orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+
+		if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+			throw new CustomException(ErrorCode.INVALID_CURRENT_PASSWORD);
+		}
+
+		user.changePasswordHash(passwordEncoder.encode(newPassword));
+		refreshTokenService.revokeAll(user.getId());
 	}
 
 	private OrganizationUser organizationUser(User user) {

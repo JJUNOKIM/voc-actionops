@@ -34,4 +34,16 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 			@Param("familyId") String familyId,
 			@Param("revokedAt") Instant revokedAt
 	);
+
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("""
+			UPDATE RefreshToken token
+			SET token.revokedAt = :revokedAt
+			WHERE token.user.id = :userId
+			  AND token.revokedAt IS NULL
+			""")
+	int revokeAllByUserId(
+			@Param("userId") Long userId,
+			@Param("revokedAt") Instant revokedAt
+	);
 }

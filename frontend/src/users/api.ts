@@ -30,3 +30,13 @@ export function changeOrganizationUserRoleRequest(
     body: JSON.stringify({ role }),
   });
 }
+
+export function changeMyPasswordRequest(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  return apiRequest('/api/v1/users/me/password', {
+    method: 'PATCH',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}

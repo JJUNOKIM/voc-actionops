@@ -92,6 +92,11 @@ public class RefreshTokenService {
 				));
 	}
 
+	@Transactional
+	public void revokeAll(Long userId) {
+		refreshTokenRepository.revokeAllByUserId(userId, clock.instant());
+	}
+
 	private IssuedRefreshToken issue(User user, String familyId, Instant issuedAt) {
 		String rawToken = refreshTokenCodec.generate();
 		RefreshToken entity = refreshTokenRepository.save(new RefreshToken(
