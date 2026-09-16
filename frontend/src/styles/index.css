@@ -436,21 +436,15 @@ input:disabled {
   border-top: 1px solid var(--border);
 }
 
-.account-avatar,
-.mobile-user-avatar {
-  display: grid;
+.user-avatar {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
   place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: 6px;
   color: var(--muted);
-  background: var(--selected);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.account-avatar {
-  width: 34px;
-  height: 34px;
+  background: #eef0f3;
 }
 
 .account-copy {
@@ -588,13 +582,6 @@ input:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .mobile-user-avatar {
-    width: 34px;
-    height: 34px;
-    color: var(--brand-dark);
-    background: var(--brand-soft);
   }
 
   .mobile-drawer-layer {

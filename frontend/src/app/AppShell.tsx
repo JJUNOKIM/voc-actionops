@@ -82,8 +82,8 @@ export function AppShell() {
           </span>
           <span>VOC ActionOps</span>
         </div>
-        <span className="mobile-user-avatar" aria-label={user.name}>
-          {initials(user.name)}
+        <span className="user-avatar" role="img" aria-label={user.name}>
+          <UserRound size={17} strokeWidth={1.5} aria-hidden="true" />
         </span>
       </header>
 
@@ -182,8 +182,8 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
       </nav>
 
       <div className="sidebar-account">
-        <div className="account-avatar" aria-hidden="true">
-          {initials(user.name)}
+        <div className="user-avatar" aria-hidden="true">
+          <UserRound size={17} strokeWidth={1.5} />
         </div>
         <div className="account-copy">
           <strong>{user.name}</strong>
@@ -202,8 +202,4 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
       </div>
     </>
   );
-}
-
-function initials(name: string): string {
-  return name.trim().slice(0, 2).toUpperCase();
 }
