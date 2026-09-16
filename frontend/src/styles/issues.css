@@ -5,7 +5,7 @@
 .issue-workspace,
 .issue-detail-section,
 .issue-overview-section {
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -42,7 +42,7 @@
 .issue-section-header > strong,
 .issue-section-actions > strong {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-filters {
@@ -130,9 +130,9 @@
   padding: 0 11px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #fafbfb;
-  font-size: 9px;
-  font-weight: 800;
+  background: var(--surface-hover);
+  font-size: 11px;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -179,9 +179,9 @@
 .issue-table td {
   height: 70px;
   padding: 10px 11px;
-  border-bottom: 1px solid #e5e9eb;
+  border-bottom: 1px solid var(--border);
   color: #3b4650;
-  font-size: 10px;
+  font-size: 11px;
   vertical-align: middle;
 }
 
@@ -192,7 +192,7 @@
 
 .issue-table tbody tr:hover,
 .issue-action-table tbody tr:hover {
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .issue-priority-cell {
@@ -203,12 +203,11 @@
 
 .issue-priority-cell strong {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .priority-badge--p3 {
-  border-color: #16a34a;
-  background: #16a34a;
+  color: var(--priority-p3);
 }
 
 .issue-title-cell,
@@ -227,7 +226,7 @@
   overflow: hidden;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
@@ -245,7 +244,7 @@
 .issue-negative-cell span,
 .issue-date-cell {
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .issue-negative-cell {
@@ -255,7 +254,7 @@
 
 .issue-negative-cell strong {
   color: #9e3b32;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-status--resolved,
@@ -329,7 +328,7 @@
   min-height: 108px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 10px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -348,8 +347,8 @@
 
 .issue-metric-strip > div > span {
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .issue-metric-strip > div > div {
@@ -370,7 +369,7 @@
 
 .issue-metric-strip small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .issue-metric-strip > div > small {
@@ -427,8 +426,8 @@
 .issue-metadata-list dt,
 .issue-feedback-meta dt {
   color: var(--subtle);
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .issue-metadata-list dd,
@@ -436,7 +435,7 @@
   margin: 7px 0 0;
   overflow-wrap: anywhere;
   color: var(--ink);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -474,7 +473,7 @@
 }
 
 .issue-section-actions > strong {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .issue-section-actions .icon-button {
@@ -485,7 +484,7 @@
   min-height: 34px;
   gap: 6px;
   padding-inline: 10px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-add-action span {
@@ -528,7 +527,7 @@
 .issue-assignment-control > div:first-child span,
 .issue-status-control > div:first-child span {
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .issue-assignment-form {
@@ -560,7 +559,7 @@
   min-height: 38px;
   gap: 6px;
   padding-inline: 12px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-users-error {
@@ -578,7 +577,7 @@
 
 .issue-users-error span {
   color: #7c3933;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-users-error .icon-button {
@@ -615,14 +614,14 @@
   min-height: 38px;
   gap: 6px;
   padding-inline: 11px;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
 .issue-management-note {
   margin: 9px 0 0;
   color: #8b5a10;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -633,7 +632,7 @@
   gap: 8px;
   padding: 9px 18px;
   border-top: 1px solid var(--border);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-operation-notice--success {
@@ -681,7 +680,7 @@
   padding: 13px 11px;
   border-bottom: 1px solid var(--border);
   color: #3b4650;
-  font-size: 10px;
+  font-size: 11px;
   vertical-align: middle;
 }
 
@@ -725,8 +724,8 @@
   color: #3b4650;
   background: var(--surface);
   font: inherit;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -744,8 +743,8 @@
   display: inline-flex;
   align-items: center;
   color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -787,7 +786,7 @@
   display: -webkit-box;
   overflow: hidden;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -836,7 +835,7 @@
 .issue-feedback-meta a {
   color: var(--ink);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -854,7 +853,7 @@
   color: var(--brand-dark);
   background: var(--brand-soft);
   font-size: 8px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .issue-feedback-main p {
@@ -890,7 +889,7 @@
 
 .issue-feedback-meta a {
   color: var(--brand);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-feedback-loading > div {
@@ -932,7 +931,7 @@
 
 .issue-section-error span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-section-error .secondary-button {
@@ -1075,8 +1074,8 @@
   .issue-action-table td::before {
     color: var(--subtle);
     content: attr(data-label);
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
   }
 
   .issue-table td:first-child,

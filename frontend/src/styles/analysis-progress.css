@@ -5,8 +5,8 @@
   padding: 0 9px;
   border: 1px solid var(--border);
   border-radius: 5px;
-  font-size: 10px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -104,7 +104,7 @@
   flex: 0 0 auto;
   color: var(--subtle) !important;
   font-size: 10px !important;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .analysis-load-error .secondary-button {
@@ -150,7 +150,7 @@
   flex: 0 0 auto;
   color: var(--ink);
   font-size: 18px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .analysis-progress-track {
@@ -191,15 +191,15 @@
 .analysis-counts dt,
 .analysis-timestamps dt {
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .analysis-counts dd {
   margin: 7px 0 0;
   color: var(--ink);
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .analysis-counts .analysis-count--success dd {
@@ -257,7 +257,7 @@
   margin-top: 18px;
   color: var(--brand);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
 }
 

@@ -1,5 +1,6 @@
 import {
-  CircleDotDashed,
+  ChevronRight,
+  CircleDot,
   Database,
   LayoutDashboard,
   LogOut,
@@ -10,14 +11,23 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../auth/useAuth';
 import type { UserProfile } from '../types/api';
 import { roleLabel } from '../users/labels';
 
+const pageLabels: Record<string, string> = {
+  datasets: '데이터셋',
+  feedbacks: '피드백',
+  issues: '이슈',
+  account: '내 계정',
+  users: '사용자 관리',
+};
+
 export function AppShell() {
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -106,6 +116,11 @@ export function AppShell() {
       )}
 
       <main className="app-content">
+        <div className="workspace-header">
+          <span>{user.organizationName}</span>
+          <ChevronRight size={14} aria-hidden="true" />
+          <strong>{pageLabels[pathname.split('/')[1]] ?? '운영 개요'}</strong>
+        </div>
         <Outlet />
       </main>
     </div>
@@ -150,9 +165,10 @@ function SidebarContent({ user, loggingOut, onLogout, onNavigate }: SidebarConte
           </>
         )}
         <NavLink className="nav-item" to="/issues" onClick={onNavigate}>
-          <CircleDotDashed size={19} aria-hidden="true" />
+          <CircleDot size={19} aria-hidden="true" />
           <span>이슈</span>
         </NavLink>
+        <p className="sidebar-settings-label">워크스페이스</p>
         <NavLink className="nav-item" to="/account" onClick={onNavigate}>
           <UserRound size={19} aria-hidden="true" />
           <span>내 계정</span>

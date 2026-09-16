@@ -61,7 +61,7 @@
 
 .dataset-workspace {
   margin-top: 16px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -155,9 +155,9 @@
   padding: 0 14px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #fafbfb;
-  font-size: 10px;
-  font-weight: 800;
+  background: var(--surface-hover);
+  font-size: 11px;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -192,7 +192,7 @@
 .dataset-table td {
   height: 64px;
   padding: 12px 14px;
-  border-bottom: 1px solid #e5e9eb;
+  border-bottom: 1px solid var(--border);
   color: #3b4650;
   font-size: 12px;
   vertical-align: middle;
@@ -203,7 +203,7 @@
 }
 
 .dataset-table tbody tr:hover {
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .dataset-name-cell {
@@ -217,7 +217,7 @@
   overflow: hidden;
   color: var(--ink);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
@@ -238,7 +238,7 @@
 .dataset-name-cell span,
 .created-at-cell {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .status-badge {
@@ -250,8 +250,8 @@
   border-radius: 5px;
   color: var(--muted);
   background: #f6f7f8;
-  font-size: 10px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -301,7 +301,7 @@
 
 .invalid-count {
   color: var(--danger) !important;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .dataset-pagination {
@@ -404,7 +404,7 @@
   align-items: center;
   gap: 20px;
   padding: 0 22px;
-  border-bottom: 1px solid #e5e9eb;
+  border-bottom: 1px solid var(--border);
 }
 
 .dataset-loading-row span {
@@ -508,7 +508,7 @@
 .form-control > span {
   color: #37424c;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .form-control input,
@@ -571,7 +571,7 @@
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--brand);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .selected-file > div {
@@ -591,7 +591,7 @@
 
 .selected-file span {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .column-count {
@@ -664,7 +664,7 @@
   gap: 8px;
   padding: 12px 22px;
   border-top: 1px solid var(--border);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .dialog-footer .primary-button,
@@ -745,8 +745,8 @@
   .dataset-table td::before {
     color: var(--subtle);
     content: attr(data-label);
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
   }
 
   .dataset-table td:first-child {

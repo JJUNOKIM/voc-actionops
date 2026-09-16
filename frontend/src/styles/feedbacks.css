@@ -21,8 +21,8 @@
 
 .feedback-scope span {
   color: #6b879a;
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .feedback-scope strong {
@@ -58,9 +58,9 @@
   padding: 0 12px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #fafbfb;
-  font-size: 10px;
-  font-weight: 800;
+  background: var(--surface-hover);
+  font-size: 11px;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -98,7 +98,7 @@
 .feedback-table td {
   height: 74px;
   padding: 10px 12px;
-  border-bottom: 1px solid #e5e9eb;
+  border-bottom: 1px solid var(--border);
   color: #3b4650;
   font-size: 11px;
   vertical-align: middle;
@@ -109,7 +109,7 @@
 }
 
 .feedback-table tbody tr:hover {
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .feedback-content-cell,
@@ -128,7 +128,7 @@
 .feedback-dataset-cell a {
   overflow: hidden;
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
@@ -166,7 +166,7 @@
 .feedback-dataset-cell span,
 .feedback-date-cell {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .feedback-analysis-cell {
@@ -181,8 +181,8 @@
   align-items: flex-end;
   gap: 6px;
   color: #46525d;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .feedback-score-track {
@@ -233,8 +233,8 @@
   max-width: 100%;
   overflow: hidden;
   color: #46525d;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -246,8 +246,8 @@
   padding: 0 7px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -349,8 +349,8 @@
 .analysis-result-grid dt,
 .analysis-model-metadata dt {
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .feedback-metadata-grid dd,
@@ -364,7 +364,7 @@
 
 .feedback-metadata-grid a {
   color: var(--brand);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -434,8 +434,8 @@
 
 .analysis-summary-block span {
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .analysis-summary-block strong {
@@ -465,7 +465,7 @@
   overflow-wrap: anywhere;
   color: var(--ink);
   font-size: 17px;
-  font-weight: 750;
+  font-weight: 600;
   line-height: 1.45;
 }
 
@@ -473,7 +473,7 @@
   display: block;
   margin-top: 7px;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -504,7 +504,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
   border-top: 1px solid var(--border);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .analysis-model-metadata > div {
@@ -549,7 +549,7 @@
   gap: 16px;
   padding: 12px 22px;
   border-bottom: 1px solid var(--border);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .correction-history-heading > div {
@@ -567,7 +567,7 @@
 
 .correction-history-heading > span {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .correction-history-list {
@@ -602,7 +602,7 @@
 
 .correction-history-meta span {
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -638,7 +638,7 @@
 .correction-history-item p {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -666,7 +666,7 @@
 
 .correction-history-empty span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .correction-history-error {
@@ -690,7 +690,7 @@
 
 .correction-history-error span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .correction-history-loading {
@@ -763,8 +763,8 @@
 
 .correction-current-value span {
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .correction-current-value strong {
@@ -787,7 +787,7 @@
   margin-bottom: 8px;
   color: #37424c;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .correction-sentiment-control > div {
@@ -805,7 +805,7 @@
   color: var(--muted);
   background: var(--surface);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -821,7 +821,7 @@
 .correction-reason small {
   align-self: flex-end;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .issue-workflow-notice {
@@ -859,7 +859,7 @@
 .feedback-issue-link-button {
   min-height: 38px;
   padding: 0 12px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-workflow-body > div + div {
@@ -874,7 +874,7 @@
   gap: 18px;
   padding: 11px 22px;
   border-bottom: 1px solid var(--border);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .issue-workflow-heading > div {
@@ -891,14 +891,14 @@
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
 .issue-workflow-heading > span {
   flex: 0 0 auto;
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .feedback-issue-list,
@@ -942,7 +942,7 @@
   overflow: hidden;
   color: var(--ink);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 600;
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
@@ -959,7 +959,7 @@
 .candidate-match-score span,
 .feedback-link-source {
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -978,8 +978,8 @@
 
 .representative-label {
   color: var(--brand);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1028,7 +1028,7 @@
   display: block;
   margin-top: 5px;
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-unlink-body > p {
@@ -1077,7 +1077,7 @@
 .feedback-candidate-action .secondary-button {
   min-height: 38px;
   padding: 0 11px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-workflow-empty {
@@ -1099,7 +1099,7 @@
 
 .issue-workflow-empty > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -1133,7 +1133,7 @@
 
 .issue-workflow-error span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-workflow-loading {
@@ -1180,7 +1180,7 @@
   padding: 10px 22px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .manual-issue-search input {
@@ -1220,7 +1220,7 @@
   gap: 12px;
   padding: 9px 22px;
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .manual-issue-result-heading {
@@ -1260,7 +1260,7 @@
 }
 
 .manual-issue-option.is-linked {
-  background: #fafbfb;
+  background: var(--surface-hover);
   cursor: default;
 }
 
@@ -1289,7 +1289,7 @@
 .manual-issue-option-copy small {
   overflow: hidden;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1306,8 +1306,8 @@
 
 .manual-linked-label {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1382,7 +1382,7 @@
 .manual-issue-search-error span,
 .manual-issue-empty span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .manual-issue-empty {
@@ -1428,7 +1428,7 @@
 .issue-link-candidate-summary > span,
 .issue-link-candidate-summary small {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-link-candidate-summary strong {
@@ -1465,7 +1465,7 @@
 
 .representative-control small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -1484,7 +1484,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   border: 1px solid var(--border);
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .issue-draft-source > div {
@@ -1498,8 +1498,8 @@
 
 .issue-draft-source dt {
   color: var(--subtle);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .issue-draft-source dd {
@@ -1507,7 +1507,7 @@
   overflow-wrap: anywhere;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .issue-draft-dialog .form-control textarea {
@@ -1533,7 +1533,7 @@
 .issue-draft-dialog .form-control > small {
   align-self: flex-end;
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .issue-draft-loading,
@@ -1567,13 +1567,13 @@
 
 .issue-draft-error span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-draft-error .secondary-button {
   min-height: 38px;
   flex: 0 0 auto;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 900px) {
@@ -1665,8 +1665,8 @@
   .feedback-table td::before {
     color: var(--subtle);
     content: attr(data-label);
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
   }
 
   .feedback-table td:first-child,
