@@ -417,6 +417,41 @@ PATCH /api/v1/organizations/me
 
 ---
 
+### 4.5 내 비밀번호 변경
+
+```http
+PATCH /api/v1/users/me/password
+```
+
+#### <Request>
+
+```json
+{
+  "currentPassword": "current-password",
+  "newPassword": "new-password"
+}
+```
+
+#### <Response>
+
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "비밀번호가 변경되었습니다."
+}
+```
+
+#### <권한>
+
+* 인증된 사용자
+
+#### <설명>
+
+현재 비밀번호를 확인한 뒤 새 비밀번호로 변경하고 기존 refresh token을 모두 폐기한다. 새 비밀번호는 8자 이상 입력한다.
+
+---
+
 ## 5. 데이터셋 API
 
 데이터셋은 CSV 업로드 단위

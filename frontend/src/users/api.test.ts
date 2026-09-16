@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   changeOrganizationUserRoleRequest,
+  changeMyPasswordRequest,
   createOrganizationUserRequest,
   organizationUsersRequest,
 } from './api';
@@ -49,6 +50,20 @@ describe('user API', () => {
     expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/users', {
       method: 'POST',
       body: JSON.stringify(request),
+    });
+  });
+
+  it('changes the current user password', async () => {
+    apiRequestMock.mockResolvedValue(undefined);
+
+    await changeMyPasswordRequest('Password123!', 'NewPassword123!');
+
+    expect(apiRequestMock).toHaveBeenCalledWith('/api/v1/users/me/password', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        currentPassword: 'Password123!',
+        newPassword: 'NewPassword123!',
+      }),
     });
   });
 });
