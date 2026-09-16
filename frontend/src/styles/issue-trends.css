@@ -61,7 +61,7 @@
   margin: 10px 0 7px;
   color: var(--ink);
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .issue-trend-summary small {
@@ -72,7 +72,7 @@
 
 .issue-trend-summary span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issue-resolution-comparison {
@@ -132,7 +132,7 @@
 .issue-trend-table-wrap thead th {
   color: var(--muted);
   background: var(--canvas);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -155,7 +155,7 @@
 .issue-trend-comparison-table small {
   display: block;
   margin-top: 5px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -279,7 +279,7 @@
   }
 
   .issue-trend-comparison-table small {
-    font-size: 9px;
+    font-size: 11px;
     line-height: 1.5;
   }
 }

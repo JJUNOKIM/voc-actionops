@@ -7,7 +7,7 @@
   grid-template-columns: minmax(210px, 0.7fr) minmax(320px, 1.3fr);
   gap: 32px;
   padding: 24px 20px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -51,8 +51,8 @@
 .account-password-form > label {
   margin-bottom: 7px;
   color: var(--subtle);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .account-details dd {
@@ -60,7 +60,7 @@
   margin: 0;
   color: var(--ink);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -98,8 +98,8 @@
 .account-form-error {
   margin: 10px 0 0;
   color: var(--danger);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .account-password-submit {

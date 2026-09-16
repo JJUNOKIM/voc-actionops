@@ -3,7 +3,7 @@
   grid-template-columns: minmax(210px, 0.7fr) minmax(320px, 1.3fr);
   gap: 32px;
   padding: 22px 20px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -33,7 +33,7 @@
   margin-bottom: 7px;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .organization-form > div {
@@ -69,8 +69,8 @@
 .organization-message,
 .organization-error {
   margin: 8px 0 0;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .organization-message {
@@ -83,7 +83,7 @@
 
 .user-workspace {
   margin-top: 16px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -113,7 +113,7 @@
 
 .user-toolbar > div:first-child > span {
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .user-toolbar .icon-button {
@@ -138,7 +138,7 @@
   color: var(--brand);
   background: #f3faf7;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .user-error {
@@ -189,9 +189,9 @@
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
   color: var(--subtle);
-  background: #fafbfb;
-  font-size: 9px;
-  font-weight: 800;
+  background: var(--surface-hover);
+  font-size: 11px;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -215,7 +215,7 @@
 .user-table td {
   height: 66px;
   padding: 10px 16px;
-  border-bottom: 1px solid #e5e9eb;
+  border-bottom: 1px solid var(--border);
   color: #3b4650;
   font-size: 11px;
   vertical-align: middle;
@@ -226,7 +226,7 @@
 }
 
 .user-table tbody tr:hover {
-  background: #fafbfb;
+  background: var(--surface-hover);
 }
 
 .user-name-cell {
@@ -246,8 +246,8 @@
   border-radius: 50%;
   color: var(--brand-dark);
   background: var(--brand-soft);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .user-name-cell strong,
@@ -282,7 +282,7 @@
   color: var(--ink);
   background: var(--surface);
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .user-role-field select:focus {
@@ -294,12 +294,12 @@
 .user-role-field > span:last-child,
 .user-current-role span {
   color: var(--subtle);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .user-current-role strong {
   color: var(--brand);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .user-dialog {
