@@ -1,4 +1,4 @@
-import { AlertCircle, Building2, RefreshCw, Save, UserPlus, UsersRound } from 'lucide-react';
+import { AlertCircle, Building2, RefreshCw, Save, UserPlus, UserRound, UsersRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '../auth/useAuth';
@@ -244,7 +244,9 @@ export function UsersPage() {
                     <tr key={organizationUser.id}>
                       <td>
                         <div className="user-name-cell">
-                          <span aria-hidden="true">{initials(organizationUser.name)}</span>
+                          <span className="user-avatar" aria-hidden="true">
+                            <UserRound size={17} strokeWidth={1.5} />
+                          </span>
                           <strong>{organizationUser.name}</strong>
                         </div>
                       </td>
@@ -293,16 +295,4 @@ export function UsersPage() {
       )}
     </div>
   );
-}
-
-function initials(name: string): string {
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) {
-    return words[0].slice(0, 2).toUpperCase();
-  }
-  return words
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase();
 }
